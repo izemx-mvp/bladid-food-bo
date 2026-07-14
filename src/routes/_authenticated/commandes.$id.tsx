@@ -26,7 +26,9 @@ const timeline = [
 function Detail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const c = commandes.find((x) => x.id === id);
+  const initial = commandes.find((x) => x.id === id);
+  const [c, setC] = useState(initial);
+  const [assignOpen, setAssignOpen] = useState(false);
   if (!c) return <div className="p-8">Introuvable</div>;
 
   const currentStep = timeline.findIndex((t) => t.key === c.statut);
