@@ -122,7 +122,7 @@ export function LiveCityMap({
       style={{ height }}
     >
       <MapBackdrop />
-      {libs ? (
+      {libs && !loadFailed ? (
         <LeafletMap
           RL={libs.RL}
           L={libs.L}
