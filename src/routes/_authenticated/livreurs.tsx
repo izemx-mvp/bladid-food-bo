@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
 import { Bike, Star, MapPin, Phone, Eye, Power, Plus, Edit, Trash2, Search, Radio } from "lucide-react";
@@ -27,6 +27,7 @@ const statutColor: Record<Livreur["statut"], string> = {
 const empty: Livreur = { id: "", nom: "", telephone: "", vehicule: "Scooter", immatriculation: "", statut: "Hors ligne", note: 5, livraisonsAujourdhui: 0, gainsJour: 0, gainsMois: 0, zone: "Kénitra Centre", actif: true };
 
 function Page() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [data, setData] = useState(seed);
   const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
@@ -86,6 +87,8 @@ function Page() {
 
   const enLigne = data.filter((l) => l.statut === "En ligne").length;
   const enCourse = data.filter((l) => l.statut === "En livraison").length;
+
+  if (pathname !== "/livreurs") return <Outlet />;
 
   return (
     <div>

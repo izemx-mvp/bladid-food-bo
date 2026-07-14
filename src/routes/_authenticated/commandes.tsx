@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
 import { ShoppingBag, Search, Eye, MoreHorizontal, Printer, XCircle, CheckCircle2, Bike, Plus } from "lucide-react";
@@ -32,6 +32,7 @@ const emptyNew: NewOrder = { client: "", telephone: "", canal: "Téléphone", pl
 
 function Page() {
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState<string>("all");
@@ -94,6 +95,8 @@ function Page() {
     setForm(emptyNew);
     toast.success(`Commande ${cmd.numero} créée`);
   }
+
+  if (pathname !== "/commandes") return <Outlet />;
 
   return (
     <div>

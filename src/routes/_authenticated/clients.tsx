@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
 import { Users, Search, Plus, Eye, MoreHorizontal, Ban, Award, Edit, Trash2, User as UserIcon } from "lucide-react";
@@ -28,6 +28,7 @@ const empty: Client = { id: "", nom: "", email: "", telephone: "", adresses: [""
 
 function Page() {
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
   const [niveauF, setNiveauF] = useState("all");
@@ -73,6 +74,8 @@ function Page() {
     setData((d) => d.map((x) => x.id === c.id ? { ...x, points: x.points + 100 } : x));
     toast.success(`+100 points ajoutés à ${c.nom}`);
   }
+
+  if (pathname !== "/clients") return <Outlet />;
 
   return (
     <div>
