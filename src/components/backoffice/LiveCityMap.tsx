@@ -102,16 +102,26 @@ export function LiveCityMap({
   onSelect?: (l: MapLivreur) => void;
   selectedId?: string;
 }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [libs, setLibs] = useState<{ RL: typeof import("react-leaflet"); L: typeof import("leaflet") } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([import("react-leaflet"), import("leaflet")]).then(([RL, L]) => {
+      if (!cancelled) setLibs({ RL, L: (L as any).default ?? L });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div
       className="relative w-full overflow-hidden rounded-3xl border border-border/50 shadow-inner"
       style={{ height }}
     >
-      {mounted ? (
+      {libs ? (
         <LeafletMap
+          RL={libs.RL}
+          L={libs.L}
           livreurs={livreurs}
           focus={focus ?? null}
           onSelect={onSelect}
