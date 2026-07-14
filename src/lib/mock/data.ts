@@ -1,7 +1,8 @@
 // Mock data for Ladid Food backoffice
 // All amounts are in MAD (Moroccan Dirham)
 
-export const LOGO_URL = "https://ladid-food.izemxlab.com/wp-content/uploads/2024/09/logo-ladid.svg";
+import logoAsset from "@/assets/ladid-logo.png.asset.json";
+export const LOGO_URL = logoAsset.url;
 
 export type Commande = {
   id: string;

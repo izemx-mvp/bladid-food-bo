@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { platsData as seed, formatMAD, type Plat } from "@/lib/mock/data";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
 
 export const Route = createFileRoute("/_authenticated/menu")({ component: Page });
 
@@ -56,12 +57,9 @@ function Page() {
         title="Menu & Plats"
         description={`${data.length} plats · ${data.filter((p) => p.disponible).length} disponibles`}
         actions={
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
-            <DialogTrigger asChild>
-              <Button className="rounded-full bg-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />Ajouter un plat</Button>
-            </DialogTrigger>
-            <PlatDialog plat={editing} onSave={save} />
-          </Dialog>
+          <Button className="rounded-full bg-primary text-primary-foreground" onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus className="h-4 w-4 mr-1" />Ajouter un plat
+          </Button>
         }
       />
 
@@ -107,26 +105,38 @@ function Page() {
           </Card>
         ))}
       </div>
+
+      <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
+        <PlatForm key={editing?.id ?? "new"} plat={editing} onSave={save} onCancel={() => { setOpen(false); setEditing(null); }} />
+      </Dialog>
     </div>
   );
 }
 
-function PlatDialog({ plat, onSave }: { plat: Plat | null; onSave: (p: Plat) => void }) {
+function PlatForm({ plat, onSave, onCancel }: { plat: Plat | null; onSave: (p: Plat) => void; onCancel: () => void }) {
   const [form, setForm] = useState<Plat>(plat ?? {
     id: "", nom: "", categorie: "Tajines", prix: 0, description: "", disponible: true, tempsPreparation: 15, allergenes: [], halal: true, ventes: 0,
   });
+  const [allergene, setAllergene] = useState("");
+
+  function addAllergene() {
+    if (!allergene.trim()) return;
+    setForm({ ...form, allergenes: [...form.allergenes, allergene.trim()] });
+    setAllergene("");
+  }
 
   return (
-    <DialogContent className="glass max-w-lg">
-      <DialogHeader>
-        <DialogTitle className="font-display text-2xl">{plat ? "Modifier le plat" : "Nouveau plat"}</DialogTitle>
-      </DialogHeader>
-      <div className="space-y-3">
-        <div>
-          <Label>Nom du plat</Label>
-          <Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
+    <FormShell
+      title={plat ? `Modifier « ${plat.nom} »` : "Nouveau plat au menu"}
+      subtitle={plat ? "Ajustez la recette, le prix ou la disponibilité." : "Ajoutez un plat aux saveurs du royaume."}
+      icon={<UtensilsCrossed className="h-5 w-5" />}
+      onSubmit={() => onSave(form)}
+      onCancel={onCancel}
+      submitLabel={plat ? "Enregistrer" : "Ajouter au menu"}
+    >
+      <FieldGroup title="Identité du plat">
+        <div><Label>Nom du plat</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Tajine Poulet aux Olives" /></div>
+        <Row>
           <div>
             <Label>Catégorie</Label>
             <Select value={form.categorie} onValueChange={(v) => setForm({ ...form, categorie: v as Plat["categorie"] })}>
@@ -134,29 +144,38 @@ function PlatDialog({ plat, onSave }: { plat: Plat | null; onSave: (p: Plat) => 
               <SelectContent>{categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div>
-            <Label>Prix (MAD)</Label>
-            <Input type="number" value={form.prix} onChange={(e) => setForm({ ...form, prix: +e.target.value })} />
-          </div>
-        </div>
+          <div><Label>Prix (MAD)</Label><Input type="number" value={form.prix} onChange={(e) => setForm({ ...form, prix: +e.target.value })} /></div>
+        </Row>
         <div>
           <Label>Description</Label>
-          <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
+          <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Décrivez les ingrédients et la préparation…" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Temps préparation (min)</Label>
-            <Input type="number" value={form.tempsPreparation} onChange={(e) => setForm({ ...form, tempsPreparation: +e.target.value })} />
-          </div>
+      </FieldGroup>
+
+      <FieldGroup title="Préparation">
+        <Row>
+          <div><Label>Temps préparation (min)</Label><Input type="number" value={form.tempsPreparation} onChange={(e) => setForm({ ...form, tempsPreparation: +e.target.value })} /></div>
           <div className="flex items-end gap-4">
-            <div className="flex items-center gap-2"><Switch checked={form.halal} onCheckedChange={(v) => setForm({ ...form, halal: v })} /><Label>Halal</Label></div>
-            <div className="flex items-center gap-2"><Switch checked={form.disponible} onCheckedChange={(v) => setForm({ ...form, disponible: v })} /><Label>Disponible</Label></div>
+            <label className="flex items-center gap-2 pb-2 text-sm"><Switch checked={form.halal} onCheckedChange={(v) => setForm({ ...form, halal: v })} />Halal</label>
+            <label className="flex items-center gap-2 pb-2 text-sm"><Switch checked={form.disponible} onCheckedChange={(v) => setForm({ ...form, disponible: v })} />Disponible</label>
           </div>
+        </Row>
+      </FieldGroup>
+
+      <FieldGroup title="Allergènes">
+        <div className="flex gap-2">
+          <Input value={allergene} onChange={(e) => setAllergene(e.target.value)} placeholder="Gluten, Œufs, Fruits à coque…" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAllergene(); } }} />
+          <Button type="button" variant="outline" className="rounded-full shrink-0" onClick={addAllergene}>Ajouter</Button>
         </div>
-      </div>
-      <DialogFooter>
-        <Button className="rounded-full bg-primary text-primary-foreground" onClick={() => onSave(form)}>Enregistrer</Button>
-      </DialogFooter>
-    </DialogContent>
+        <div className="flex flex-wrap gap-2">
+          {form.allergenes.map((a, i) => (
+            <Badge key={i} variant="outline" className="cursor-pointer" onClick={() => setForm({ ...form, allergenes: form.allergenes.filter((_, j) => j !== i) })}>
+              {a} ×
+            </Badge>
+          ))}
+          {form.allergenes.length === 0 && <span className="text-xs text-muted-foreground">Aucun allergène déclaré</span>}
+        </div>
+      </FieldGroup>
+    </FormShell>
   );
 }
