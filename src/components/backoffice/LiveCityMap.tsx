@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Home, Bike as BikeIcon, Clock, Zap, Route as RouteIcon, Phone, Navigation2 } from "lucide-react";
+import { Home, Bike as BikeIcon, Clock, Zap, Route as RouteIcon, Phone, Navigation2, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import "leaflet/dist/leaflet.css";
@@ -103,10 +103,13 @@ export function LiveCityMap({
   selectedId?: string;
 }) {
   const [libs, setLibs] = useState<{ RL: typeof import("react-leaflet"); L: typeof import("leaflet") } | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   useEffect(() => {
     let cancelled = false;
     Promise.all([import("react-leaflet"), import("leaflet")]).then(([RL, L]) => {
       if (!cancelled) setLibs({ RL, L: (L as any).default ?? L });
+    }).catch(() => {
+      if (!cancelled) setLoadFailed(true);
     });
     return () => {
       cancelled = true;
@@ -115,9 +118,10 @@ export function LiveCityMap({
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-3xl border border-border/50 shadow-inner"
+      className="relative w-full overflow-hidden rounded-3xl border border-border/50 shadow-inner bg-secondary"
       style={{ height }}
     >
+      <MapBackdrop />
       {libs ? (
         <LeafletMap
           RL={libs.RL}
@@ -126,10 +130,21 @@ export function LiveCityMap({
           focus={focus ?? null}
           onSelect={onSelect}
           selectedId={selectedId}
+          onTileError={() => setLoadFailed(true)}
         />
+      ) : loadFailed ? (
+        <FallbackMap livreurs={livreurs} focus={focus ?? null} onSelect={onSelect} selectedId={selectedId} />
       ) : (
         <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground">
-          Chargement de la carte…
+          <div className="rounded-full bg-background/90 border border-border px-4 py-2 shadow-sm flex items-center gap-2">
+            <MapPinned className="h-4 w-4 text-primary animate-pulse" /> Chargement de la carte GPS…
+          </div>
+        </div>
+      )}
+
+      {loadFailed && libs && (
+        <div className="pointer-events-none absolute bottom-3 right-3 z-[500] rounded-full bg-background/95 border border-border px-3 py-1.5 text-[11px] text-muted-foreground shadow-md">
+          Fond cartographique local actif
         </div>
       )}
 
@@ -209,7 +224,7 @@ export function LiveCityMap({
           )}
 
           {focus.telephone && (
-            <Button size="sm" variant="outline" className="w-full rounded-full mt-3">
+            <Button size="sm" variant="outline" className="w-full rounded-full mt-3" onClick={() => window.open(`tel:${focus.telephone}`, "_self")}>
               <Phone className="h-3.5 w-3.5 mr-1" /> Appeler {focus.telephone}
             </Button>
           )}
@@ -226,6 +241,7 @@ function LeafletMap({
   focus,
   onSelect,
   selectedId,
+  onTileError,
 }: {
   RL: typeof import("react-leaflet");
   L: typeof import("leaflet");
@@ -233,6 +249,7 @@ function LeafletMap({
   focus: MapLivreur | null;
   onSelect?: (l: MapLivreur) => void;
   selectedId?: string;
+  onTileError?: () => void;
 }) {
   const { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } = RL;
 
@@ -300,6 +317,7 @@ function LeafletMap({
       <style>{`
         @keyframes ldfPing { 75%,100% { transform:scale(2); opacity:0; } }
         .leaflet-container { background:#e8f1ef; font-family:inherit; }
+        .leaflet-container .leaflet-tile-pane { filter:saturate(1.08) contrast(1.02); }
         .leaflet-popup-content-wrapper { border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.18); }
         .leaflet-popup-content { margin:12px 14px; font-size:12px; }
         .leaflet-control-attribution { font-size:9px !important; opacity:.7; }
@@ -311,8 +329,9 @@ function LeafletMap({
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{y}/{x}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          eventHandlers={{ tileerror: onTileError }}
         />
 
         <Marker position={restaurantPos} icon={restaurantIcon}>
@@ -385,5 +404,68 @@ function LeafletMap({
         <Recenter />
       </MapContainer>
     </>
+  );
+}
+
+function MapBackdrop() {
+  return (
+    <div className="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklab,var(--primary)_14%,transparent)_1px,transparent_1px),linear-gradient(0deg,color-mix(in_oklab,var(--primary)_10%,transparent)_1px,transparent_1px)] bg-[size:72px_72px]">
+      <svg className="h-full w-full opacity-70" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="ldfRoad" x1="0" x2="1">
+            <stop offset="0" stopColor="currentColor" stopOpacity="0.1" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0.32" />
+          </linearGradient>
+        </defs>
+        <g className="text-primary" fill="none" stroke="url(#ldfRoad)" strokeWidth="10" strokeLinecap="round">
+          <path d="M-40 470 C160 350 270 390 430 265 S760 130 1040 170" />
+          <path d="M110 -20 C150 125 230 235 370 315 S675 455 945 655" />
+          <path d="M-20 180 C175 205 350 170 520 220 S810 345 1020 300" />
+          <path d="M300 660 C325 500 390 390 505 300 S610 155 645 -35" />
+        </g>
+        <g className="text-foreground" fill="currentColor" opacity="0.55" fontSize="18" fontFamily="inherit">
+          <text x="70" y="112">Maamoura</text>
+          <text x="418" y="105">Mimosas</text>
+          <text x="695" y="190">Bir Rami</text>
+          <text x="185" y="500">Centre-ville</text>
+          <text x="610" y="500">Val Fleuri</text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function FallbackMap({
+  livreurs,
+  focus,
+  onSelect,
+  selectedId,
+}: {
+  livreurs: MapLivreur[];
+  focus: MapLivreur | null;
+  onSelect?: (l: MapLivreur) => void;
+  selectedId?: string;
+}) {
+  return (
+    <div className="relative h-full w-full">
+      <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary text-primary-foreground h-11 w-11 flex items-center justify-center shadow-xl ring-4 ring-background">
+        <Home className="h-5 w-5" />
+      </div>
+      {livreurs.map((l) => {
+        const selected = selectedId === l.id || focus?.id === l.id;
+        return (
+          <button
+            key={l.id}
+            type="button"
+            className="absolute z-20 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-xl ring-4 ring-background transition hover:scale-110 focus:outline-none focus:ring-primary"
+            style={{ left: `${l.x}%`, top: `${l.y}%`, background: statutColor[l.statut], width: selected ? 44 : 36, height: selected ? 44 : 36 }}
+            onClick={() => onSelect?.(l)}
+            aria-label={`Voir détails ${l.nom}`}
+          >
+            <BikeIcon className="mx-auto h-4 w-4 text-white" />
+          </button>
+        );
+      })}
+    </div>
   );
 }
