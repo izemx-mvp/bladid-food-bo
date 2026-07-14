@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { Bike, Star, MapPin, Phone, Eye, Power, Plus, Edit, Trash2 } from "lucide-react";
+import { Bike, Star, MapPin, Phone, Eye, Power, Plus, Edit, Trash2, Search, Radio } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { livreurs as seed, formatMAD, type Livreur } from "@/lib/mock/data";
+import { livreurs as seed, commandes, formatMAD, type Livreur } from "@/lib/mock/data";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
+import { LiveCityMap, buildMapLivreurs, type MapLivreur } from "@/components/backoffice/LiveCityMap";
 
 export const Route = createFileRoute("/_authenticated/livreurs")({ component: Page });
 
@@ -28,11 +29,35 @@ const empty: Livreur = { id: "", nom: "", telephone: "", vehicule: "Scooter", im
 function Page() {
   const [data, setData] = useState(seed);
   const [filter, setFilter] = useState("all");
+  const [q, setQ] = useState("");
+  const [zone, setZone] = useState("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Livreur | null>(null);
   const [form, setForm] = useState<Livreur>(empty);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const filtered = filter === "all" ? data : data.filter((l) => l.statut === filter);
+  const filtered = data.filter((l) => {
+    if (filter !== "all" && l.statut !== filter) return false;
+    if (zone !== "all" && l.zone !== zone) return false;
+    if (q && !l.nom.toLowerCase().includes(q.toLowerCase()) && !l.telephone.includes(q)) return false;
+    return true;
+  });
+
+  const commandesByLivreur = useMemo(() => {
+    const m: Record<string, { numero: string; client: string; adresse: string }> = {};
+    commandes.filter((c) => c.livreur && c.statut === "En livraison").forEach((c) => {
+      if (c.livreur) m[c.livreur] = { numero: c.numero, client: c.client, adresse: c.adresse };
+    });
+    return m;
+  }, []);
+
+  const mapPoints: MapLivreur[] = useMemo(
+    () => buildMapLivreurs(filtered.filter((l) => l.statut !== "Hors ligne"), commandesByLivreur),
+    [filtered, commandesByLivreur]
+  );
+
+  const focused = selectedId ? mapPoints.find((m) => m.id === selectedId) ?? null : null;
+  const zones = Array.from(new Set(data.map((l) => l.zone)));
 
   function openAdd() { setEditing(null); setForm(empty); setOpen(true); }
   function openEdit(l: Livreur) { setEditing(l); setForm(l); setOpen(true); }
@@ -59,28 +84,65 @@ function Page() {
     toast.success(`${l.nom} retiré de l'équipe`);
   }
 
+  const enLigne = data.filter((l) => l.statut === "En ligne").length;
+  const enCourse = data.filter((l) => l.statut === "En livraison").length;
+
   return (
     <div>
       <PageHeader
         icon={Bike}
         title="Livreurs"
-        description={`${data.length} livreurs · ${data.filter((l) => l.statut === "En ligne").length} en ligne · ${data.filter((l) => l.statut === "En livraison").length} en course`}
+        description={`${data.length} livreurs · ${enLigne} en ligne · ${enCourse} en course`}
         actions={<Button className="rounded-full bg-primary text-primary-foreground" onClick={openAdd}><Plus className="h-4 w-4 mr-1" />Nouveau livreur</Button>}
       />
 
-      <Tabs value={filter} onValueChange={setFilter} className="mb-4">
-        <TabsList className="bg-secondary/60">
-          <TabsTrigger value="all">Tous</TabsTrigger>
-          <TabsTrigger value="En ligne">En ligne</TabsTrigger>
-          <TabsTrigger value="En livraison">En livraison</TabsTrigger>
-          <TabsTrigger value="En pause">En pause</TabsTrigger>
-          <TabsTrigger value="Hors ligne">Hors ligne</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* LIVE MAP */}
+      <Card className="glass p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="font-display text-lg flex items-center gap-2"><Radio className="h-4 w-4 text-primary" />Suivi en direct — Kénitra</h3>
+            <p className="text-xs text-muted-foreground">Cliquez sur un livreur pour voir sa course en cours.</p>
+          </div>
+          <Badge variant="outline" className="border-primary/40 text-primary">
+            {mapPoints.length} livreurs visibles
+          </Badge>
+        </div>
+        <LiveCityMap
+          livreurs={mapPoints}
+          height={460}
+          focus={focused}
+          selectedId={selectedId ?? undefined}
+          onSelect={(l) => setSelectedId((cur) => (cur === l.id ? null : l.id))}
+        />
+      </Card>
+
+      {/* Filters */}
+      <Card className="glass p-4 mb-4 flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Rechercher nom ou téléphone…" className="pl-9 bg-secondary/60 border-0" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+        <Select value={zone} onValueChange={setZone}>
+          <SelectTrigger className="w-48 bg-secondary/60 border-0"><SelectValue placeholder="Zone" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les zones</SelectItem>
+            {zones.map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Tabs value={filter} onValueChange={setFilter}>
+          <TabsList className="bg-secondary/60">
+            <TabsTrigger value="all">Tous</TabsTrigger>
+            <TabsTrigger value="En ligne">En ligne</TabsTrigger>
+            <TabsTrigger value="En livraison">En livraison</TabsTrigger>
+            <TabsTrigger value="En pause">En pause</TabsTrigger>
+            <TabsTrigger value="Hors ligne">Hors ligne</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((l) => (
-          <Card key={l.id} className="glass p-5 group hover:glow transition-all">
+          <Card key={l.id} className={`glass p-5 group hover:glow transition-all ${selectedId === l.id ? "glow" : ""}`}>
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -119,7 +181,12 @@ function Page() {
             </div>
 
             <div className="flex gap-1 mt-3">
-              <Button asChild size="sm" variant="outline" className="flex-1 rounded-full"><Link to="/livreurs/$id" params={{ id: l.id }}><Eye className="h-3 w-3 mr-1" />Voir</Link></Button>
+              {l.statut !== "Hors ligne" && (
+                <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => setSelectedId(l.id)}>
+                  <Radio className="h-3 w-3 mr-1" />Suivre
+                </Button>
+              )}
+              <Button asChild size="sm" variant="outline" className="flex-1 rounded-full"><Link to="/livreurs/$id" params={{ id: l.id }}><Eye className="h-3 w-3 mr-1" />Détails</Link></Button>
               <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(l)}><Edit className="h-3.5 w-3.5" /></Button>
               <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggle(l)}><Power className="h-3.5 w-3.5" /></Button>
               <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(l)}><Trash2 className="h-3.5 w-3.5" /></Button>
