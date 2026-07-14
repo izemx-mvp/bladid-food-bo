@@ -125,6 +125,3 @@ export function TopBar() {
     </header>
   );
 }
-
-function Settings() { return <Settings2Icon />; }
-import { Settings2 as Settings2Icon } from "lucide-react";
