@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
 import { Users, Search, Plus, Eye, MoreHorizontal, Ban, Award, Edit, Trash2, User as UserIcon } from "lucide-react";
@@ -27,6 +27,8 @@ const niveauColor: Record<Client["niveau"], string> = {
 const empty: Client = { id: "", nom: "", email: "", telephone: "", adresses: [""], points: 0, niveau: "Bronze", commandes: 0, totalDepense: 0, inscription: new Date().toISOString(), actif: true };
 
 function Page() {
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
   const [niveauF, setNiveauF] = useState("all");
@@ -72,6 +74,8 @@ function Page() {
     setData((d) => d.map((x) => x.id === c.id ? { ...x, points: x.points + 100 } : x));
     toast.success(`+100 points ajoutés à ${c.nom}`);
   }
+
+  if (pathname !== "/clients") return <Outlet />;
 
   return (
     <div>
@@ -144,7 +148,7 @@ function Page() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild><Link to="/clients/$id" params={{ id: c.id }}><Eye className="h-4 w-4 mr-2" />Voir la fiche</Link></DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: "/clients/$id", params: { id: c.id } })}><Eye className="h-4 w-4 mr-2" />Voir la fiche</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openEdit(c)}><Edit className="h-4 w-4 mr-2" />Modifier</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => addPoints(c)}><Award className="h-4 w-4 mr-2" />+100 points</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => toggle(c)}><Ban className="h-4 w-4 mr-2" />{c.actif ? "Bloquer" : "Débloquer"}</DropdownMenuItem>

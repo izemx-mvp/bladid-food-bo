@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
 import { ShoppingBag, Search, Eye, MoreHorizontal, Printer, XCircle, CheckCircle2, Bike, Plus } from "lucide-react";
@@ -31,6 +31,8 @@ type NewOrder = { client: string; telephone: string; canal: Commande["canal"]; p
 const emptyNew: NewOrder = { client: "", telephone: "", canal: "Téléphone", plat: "Tajine Poulet aux Olives", qte: 1, prix: 85, adresse: "", paiement: "Espèces", note: "" };
 
 function Page() {
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState<string>("all");
@@ -93,6 +95,8 @@ function Page() {
     setForm(emptyNew);
     toast.success(`Commande ${cmd.numero} créée`);
   }
+
+  if (pathname !== "/commandes") return <Outlet />;
 
   return (
     <div>
@@ -160,7 +164,7 @@ function Page() {
                       <Button size="icon" variant="ghost" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild><Link to="/commandes/$id" params={{ id: c.id }}><Eye className="h-4 w-4 mr-2" />Voir détails</Link></DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate({ to: "/commandes/$id", params: { id: c.id } })}><Eye className="h-4 w-4 mr-2" />Voir détails</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => printTicket(c)}><Printer className="h-4 w-4 mr-2" />Imprimer ticket</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setAssignFor(c)}><Bike className="h-4 w-4 mr-2" />Assigner un livreur</DropdownMenuItem>
                       <DropdownMenuSeparator />

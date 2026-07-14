@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { MessageSquareWarning, Search, CheckCircle2, Send, UserCheck, XCircle } from "lucide-react";
+import { MessageSquareWarning, Search, CheckCircle2, Send, UserCheck, XCircle, Eye, MoreHorizontal, Clock, ClipboardCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { reclamations as seed, formatDate, type Reclamation } from "@/lib/mock/data";
 import { toast } from "sonner";
 
@@ -118,7 +119,19 @@ function Page() {
                 <TableCell className="text-sm text-muted-foreground">{r.assignee ?? "—"}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{formatDate(r.date)}</TableCell>
                 <TableCell className="text-right">
-                  <Button size="sm" variant="outline" className="rounded-full" onClick={() => { setCurrent(r); setReponse(""); }}>Traiter</Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="ghost" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => { setCurrent(r); setReponse(""); }}><Eye className="h-4 w-4 mr-2" />Voir / traiter</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => assignToMe(r)}><UserCheck className="h-4 w-4 mr-2" />M'assigner</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setStatut(r, "En cours")}><Clock className="h-4 w-4 mr-2" />Mettre en cours</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setStatut(r, "Résolue")}><ClipboardCheck className="h-4 w-4 mr-2" />Marquer résolue</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => setStatut(r, "Fermée")}><XCircle className="h-4 w-4 mr-2" />Fermer</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
