@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark, .dark *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -52,7 +52,44 @@
 
 :root {
   --radius: 0.75rem;
-  /* Ladid Food dark theme by default */
+  /* Ladid Food LIGHT theme (default) */
+  --background: oklch(0.99 0.005 90);
+  --foreground: oklch(0.20 0.03 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.20 0.03 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.20 0.03 250);
+  --primary: oklch(0.68 0.13 190);
+  --primary-foreground: oklch(0.99 0.01 90);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.22 0.03 250);
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.50 0.02 250);
+  --accent: oklch(0.92 0.08 90);
+  --accent-foreground: oklch(0.22 0.03 250);
+  --destructive: oklch(0.60 0.22 25);
+  --destructive-foreground: oklch(0.99 0.01 90);
+  --border: oklch(0.22 0.03 250 / 10%);
+  --input: oklch(0.22 0.03 250 / 12%);
+  --ring: oklch(0.68 0.13 190);
+  --chart-1: oklch(0.68 0.13 190);
+  --chart-2: oklch(0.75 0.15 90);
+  --chart-3: oklch(0.65 0.18 30);
+  --chart-4: oklch(0.60 0.20 320);
+  --chart-5: oklch(0.65 0.15 140);
+  --cream: oklch(0.97 0.04 90);
+  --teal-glow: oklch(0.80 0.14 185);
+  --sidebar: oklch(0.98 0.005 240);
+  --sidebar-foreground: oklch(0.22 0.03 250);
+  --sidebar-primary: oklch(0.68 0.13 190);
+  --sidebar-primary-foreground: oklch(0.99 0.01 90);
+  --sidebar-accent: oklch(0.94 0.01 240);
+  --sidebar-accent-foreground: oklch(0.22 0.03 250);
+  --sidebar-border: oklch(0.22 0.03 250 / 8%);
+  --sidebar-ring: oklch(0.68 0.13 190);
+}
+
+.dark {
   --background: oklch(0.17 0.03 250);
   --foreground: oklch(0.98 0.01 90);
   --card: oklch(0.22 0.03 250);
@@ -72,11 +109,6 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.78 0.14 190);
-  --chart-1: oklch(0.78 0.14 190);
-  --chart-2: oklch(0.85 0.15 90);
-  --chart-3: oklch(0.7 0.18 30);
-  --chart-4: oklch(0.65 0.2 320);
-  --chart-5: oklch(0.72 0.15 140);
   --cream: oklch(0.96 0.04 90);
   --teal-glow: oklch(0.85 0.15 185);
   --sidebar: oklch(0.19 0.03 250);
@@ -107,18 +139,18 @@
 
 @utility bg-mesh {
   background-image:
-    radial-gradient(at 20% 10%, oklch(0.78 0.14 190 / 0.18) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, oklch(0.85 0.15 90 / 0.10) 0px, transparent 50%),
-    radial-gradient(at 70% 90%, oklch(0.78 0.14 190 / 0.12) 0px, transparent 50%);
+    radial-gradient(at 20% 10%, color-mix(in oklab, var(--primary) 18%, transparent) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, color-mix(in oklab, var(--accent) 20%, transparent) 0px, transparent 50%),
+    radial-gradient(at 70% 90%, color-mix(in oklab, var(--primary) 12%, transparent) 0px, transparent 50%);
 }
 
 @utility glass {
-  background: color-mix(in oklab, var(--card) 70%, transparent);
+  background: color-mix(in oklab, var(--card) 80%, transparent);
   backdrop-filter: blur(14px);
   border: 1px solid color-mix(in oklab, var(--primary) 15%, transparent);
 }
 
 @utility glow {
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 30%, transparent),
-    0 10px 40px -12px color-mix(in oklab, var(--primary) 40%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 25%, transparent),
+    0 10px 40px -12px color-mix(in oklab, var(--primary) 35%, transparent);
 }
