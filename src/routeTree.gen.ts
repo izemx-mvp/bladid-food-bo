@@ -18,7 +18,6 @@ import { Route as AuthenticatedReclamationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedRapportsRouteImport } from './routes/_authenticated/rapports'
 import { Route as AuthenticatedPromotionsRouteImport } from './routes/_authenticated/promotions'
 import { Route as AuthenticatedPointsDeVenteRouteImport } from './routes/_authenticated/points-de-vente'
-import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMenuRouteImport } from './routes/_authenticated/menu'
 import { Route as AuthenticatedLivreursRouteImport } from './routes/_authenticated/livreurs'
@@ -79,11 +78,6 @@ const AuthenticatedPointsDeVenteRoute =
     path: '/points-de-vente',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
-  id: '/parametres',
-  path: '/parametres',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -153,7 +147,6 @@ export interface FileRoutesByFullPath {
   '/livreurs': typeof AuthenticatedLivreursRouteWithChildren
   '/menu': typeof AuthenticatedMenuRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/parametres': typeof AuthenticatedParametresRoute
   '/points-de-vente': typeof AuthenticatedPointsDeVenteRoute
   '/promotions': typeof AuthenticatedPromotionsRoute
   '/rapports': typeof AuthenticatedRapportsRoute
@@ -175,7 +168,6 @@ export interface FileRoutesByTo {
   '/livreurs': typeof AuthenticatedLivreursRouteWithChildren
   '/menu': typeof AuthenticatedMenuRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
-  '/parametres': typeof AuthenticatedParametresRoute
   '/points-de-vente': typeof AuthenticatedPointsDeVenteRoute
   '/promotions': typeof AuthenticatedPromotionsRoute
   '/rapports': typeof AuthenticatedRapportsRoute
@@ -199,7 +191,6 @@ export interface FileRoutesById {
   '/_authenticated/livreurs': typeof AuthenticatedLivreursRouteWithChildren
   '/_authenticated/menu': typeof AuthenticatedMenuRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
-  '/_authenticated/parametres': typeof AuthenticatedParametresRoute
   '/_authenticated/points-de-vente': typeof AuthenticatedPointsDeVenteRoute
   '/_authenticated/promotions': typeof AuthenticatedPromotionsRoute
   '/_authenticated/rapports': typeof AuthenticatedRapportsRoute
@@ -223,7 +214,6 @@ export interface FileRouteTypes {
     | '/livreurs'
     | '/menu'
     | '/notifications'
-    | '/parametres'
     | '/points-de-vente'
     | '/promotions'
     | '/rapports'
@@ -245,7 +235,6 @@ export interface FileRouteTypes {
     | '/livreurs'
     | '/menu'
     | '/notifications'
-    | '/parametres'
     | '/points-de-vente'
     | '/promotions'
     | '/rapports'
@@ -268,7 +257,6 @@ export interface FileRouteTypes {
     | '/_authenticated/livreurs'
     | '/_authenticated/menu'
     | '/_authenticated/notifications'
-    | '/_authenticated/parametres'
     | '/_authenticated/points-de-vente'
     | '/_authenticated/promotions'
     | '/_authenticated/rapports'
@@ -349,13 +337,6 @@ declare module '@tanstack/react-router' {
       path: '/points-de-vente'
       fullPath: '/points-de-vente'
       preLoaderRoute: typeof AuthenticatedPointsDeVenteRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/parametres': {
-      id: '/_authenticated/parametres'
-      path: '/parametres'
-      fullPath: '/parametres'
-      preLoaderRoute: typeof AuthenticatedParametresRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/notifications': {
@@ -485,7 +466,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedLivreursRoute: typeof AuthenticatedLivreursRouteWithChildren
   AuthenticatedMenuRoute: typeof AuthenticatedMenuRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
   AuthenticatedPointsDeVenteRoute: typeof AuthenticatedPointsDeVenteRoute
   AuthenticatedPromotionsRoute: typeof AuthenticatedPromotionsRoute
   AuthenticatedRapportsRoute: typeof AuthenticatedRapportsRoute
@@ -503,7 +483,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedLivreursRoute: AuthenticatedLivreursRouteWithChildren,
   AuthenticatedMenuRoute: AuthenticatedMenuRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
-  AuthenticatedParametresRoute: AuthenticatedParametresRoute,
   AuthenticatedPointsDeVenteRoute: AuthenticatedPointsDeVenteRoute,
   AuthenticatedPromotionsRoute: AuthenticatedPromotionsRoute,
   AuthenticatedRapportsRoute: AuthenticatedRapportsRoute,
