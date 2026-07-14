@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { ShieldCheck, Plus, Edit, Trash2, KeyRound } from "lucide-react";
+import { ShieldCheck, Plus, Edit, Trash2, KeyRound, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
