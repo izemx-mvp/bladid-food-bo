@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { livreurs, commandes, formatMAD, formatDate } from "@/lib/mock/data";
 import { PageHeader } from "@/components/backoffice/PageHeader";
@@ -101,7 +101,9 @@ function Detail() {
                   <div className="text-[10px] text-muted-foreground">Panier</div>
                 </div>
               </div>
-              <Button className="w-full rounded-full bg-primary text-primary-foreground mt-3">Voir la commande</Button>
+              <Button className="w-full rounded-full bg-primary text-primary-foreground mt-3" asChild>
+                <Link to="/commandes/$id" params={{ id: activeCourse.id }}>Voir la commande</Link>
+              </Button>
             </Card>
           ) : (
             <Card className="glass p-6">
