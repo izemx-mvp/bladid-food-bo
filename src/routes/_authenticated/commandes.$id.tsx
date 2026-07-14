@@ -33,6 +33,19 @@ function Detail() {
 
   const currentStep = timeline.findIndex((t) => t.key === c.statut);
 
+  function printTicket() {
+    const lines = c.items.map((it) => `${it.qte} × ${it.plat} — ${formatMAD(it.qte * it.prix)}`).join("\n");
+    const ticket = `LADID FOOD\n${c.numero}\n${formatDate(c.date)}\n\nClient: ${c.client}\nTel: ${c.telephone}\nAdresse: ${c.adresse}\n\n${lines}\n\nTOTAL: ${formatMAD(c.total)}\nPaiement: ${c.paiement}`;
+    const blob = new Blob([ticket], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${c.numero.replace("#", "")}-ticket.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Ticket téléchargé", { description: c.numero });
+  }
+
   return (
     <div>
       <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/commandes" })} className="mb-4"><ArrowLeft className="h-4 w-4 mr-1" />Retour aux commandes</Button>
@@ -42,7 +55,7 @@ function Detail() {
         description={`${c.canal} · ${formatDate(c.date)}`}
         actions={
           <>
-            <Button variant="outline" className="rounded-full" onClick={() => toast.success("Ticket imprimé")}><Printer className="h-4 w-4 mr-1" />Imprimer</Button>
+            <Button variant="outline" className="rounded-full" onClick={printTicket}><Printer className="h-4 w-4 mr-1" />Imprimer</Button>
             <Button className="rounded-full bg-destructive text-destructive-foreground" onClick={() => { setC((p) => p ? { ...p, statut: "Annulée" } : p); toast.warning("Commande annulée"); }}><XCircle className="h-4 w-4 mr-1" />Annuler</Button>
           </>
         }
