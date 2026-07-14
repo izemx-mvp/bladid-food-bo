@@ -10,11 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCommandesRouteImport } from './routes/_authenticated/commandes'
+import { Route as AuthenticatedCommandesIdRouteImport } from './routes/_authenticated/commandes.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,30 +30,64 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCommandesRoute = AuthenticatedCommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCommandesIdRoute =
+  AuthenticatedCommandesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedCommandesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/commandes': typeof AuthenticatedCommandesRouteWithChildren
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/commandes/$id': typeof AuthenticatedCommandesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/commandes': typeof AuthenticatedCommandesRouteWithChildren
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/commandes/$id': typeof AuthenticatedCommandesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/commandes': typeof AuthenticatedCommandesRouteWithChildren
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/commandes/$id': typeof AuthenticatedCommandesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths: '/' | '/login' | '/commandes' | '/dashboard' | '/commandes/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to: '/' | '/login' | '/commandes' | '/dashboard' | '/commandes/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/commandes'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/commandes/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
@@ -58,6 +100,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,11 +114,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/commandes': {
+      id: '/_authenticated/commandes'
+      path: '/commandes'
+      fullPath: '/commandes'
+      preLoaderRoute: typeof AuthenticatedCommandesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/commandes/$id': {
+      id: '/_authenticated/commandes/$id'
+      path: '/$id'
+      fullPath: '/commandes/$id'
+      preLoaderRoute: typeof AuthenticatedCommandesIdRouteImport
+      parentRoute: typeof AuthenticatedCommandesRoute
+    }
   }
 }
 
+interface AuthenticatedCommandesRouteChildren {
+  AuthenticatedCommandesIdRoute: typeof AuthenticatedCommandesIdRoute
+}
+
+const AuthenticatedCommandesRouteChildren: AuthenticatedCommandesRouteChildren =
+  {
+    AuthenticatedCommandesIdRoute: AuthenticatedCommandesIdRoute,
+  }
+
+const AuthenticatedCommandesRouteWithChildren =
+  AuthenticatedCommandesRoute._addFileChildren(
+    AuthenticatedCommandesRouteChildren,
+  )
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedCommandesRoute: typeof AuthenticatedCommandesRouteWithChildren
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedCommandesRoute: AuthenticatedCommandesRouteWithChildren,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
