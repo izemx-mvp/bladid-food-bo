@@ -29,11 +29,19 @@ const empty: Client = { id: "", nom: "", email: "", telephone: "", adresses: [""
 function Page() {
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
+  const [niveauF, setNiveauF] = useState("all");
+  const [statutF, setStatutF] = useState("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Client | null>(null);
   const [form, setForm] = useState<Client>(empty);
 
-  const filtered = data.filter((c) => c.nom.toLowerCase().includes(q.toLowerCase()) || c.email.toLowerCase().includes(q.toLowerCase()));
+  const filtered = data.filter((c) => {
+    if (niveauF !== "all" && c.niveau !== niveauF) return false;
+    if (statutF === "actifs" && !c.actif) return false;
+    if (statutF === "bloques" && c.actif) return false;
+    if (q && !c.nom.toLowerCase().includes(q.toLowerCase()) && !c.email.toLowerCase().includes(q.toLowerCase()) && !c.telephone.includes(q)) return false;
+    return true;
+  });
 
   function openAdd() { setEditing(null); setForm(empty); setOpen(true); }
   function openEdit(c: Client) { setEditing(c); setForm(c); setOpen(true); }
