@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { MessageSquareWarning, Search, CheckCircle2, Send } from "lucide-react";
+import { MessageSquareWarning, Search, CheckCircle2, Send, UserCheck, XCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { reclamations as seed, formatDate, type Reclamation } from "@/lib/mock/data";
@@ -45,7 +45,23 @@ function Page() {
 
   function setStatut(r: Reclamation, s: Reclamation["statut"]) {
     setData((d) => d.map((x) => x.id === r.id ? { ...x, statut: s } : x));
+    setCurrent((cur) => cur?.id === r.id ? { ...cur, statut: s } : cur);
     toast.success(`Réclamation ${s.toLowerCase()}`);
+  }
+
+  function assignToMe(r: Reclamation) {
+    setData((d) => d.map((x) => x.id === r.id ? { ...x, assignee: "Yassine Amrani", statut: x.statut === "Nouvelle" ? "En cours" : x.statut } : x));
+    setCurrent((cur) => cur?.id === r.id ? { ...cur, assignee: "Yassine Amrani", statut: cur.statut === "Nouvelle" ? "En cours" : cur.statut } : cur);
+    toast.success("Réclamation assignée à votre compte");
+  }
+
+  function sendResponse() {
+    if (!current) return;
+    if (!reponse.trim()) return toast.error("Écrivez une réponse avant l'envoi");
+    setData((d) => d.map((x) => x.id === current.id ? { ...x, statut: "En cours", assignee: x.assignee ?? "Yassine Amrani" } : x));
+    setCurrent({ ...current, statut: "En cours", assignee: current.assignee ?? "Yassine Amrani" });
+    toast.success("Réponse envoyée au client", { description: current.client });
+    setReponse("");
   }
 
   return (
@@ -102,40 +118,56 @@ function Page() {
                 <TableCell className="text-sm text-muted-foreground">{r.assignee ?? "—"}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{formatDate(r.date)}</TableCell>
                 <TableCell className="text-right">
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button size="sm" variant="outline" className="rounded-full" onClick={() => setCurrent(r)}>Traiter</Button>
-                    </SheetTrigger>
-                    {current && <SheetContent className="glass w-full sm:max-w-lg">
-                      <SheetHeader><SheetTitle className="font-display text-2xl">{current.sujet}</SheetTitle></SheetHeader>
-                      <div className="mt-6 space-y-4">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Client</span><span className="font-medium">{current.client}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Commande</span><span className="font-mono text-primary">{current.commande}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Priorité</span><span className={prioColor[current.priorite]}>{current.priorite}</span>
-                        </div>
-                        <div className="p-4 rounded-xl bg-secondary/40 text-sm">{current.message}</div>
-                        <div>
-                          <label className="text-sm font-medium mb-2 block">Réponse au client</label>
-                          <Textarea rows={4} placeholder="Bonjour, nous sommes désolés…" value={reponse} onChange={(e) => setReponse(e.target.value)} />
-                        </div>
-                        <div className="flex gap-2">
-                          <Button className="flex-1 rounded-full bg-primary text-primary-foreground" onClick={() => { toast.success("Réponse envoyée au client"); setReponse(""); }}><Send className="h-4 w-4 mr-1" />Envoyer</Button>
-                          <Button variant="outline" className="rounded-full" onClick={() => setStatut(current, "Résolue")}><CheckCircle2 className="h-4 w-4 mr-1" />Résoudre</Button>
-                        </div>
-                      </div>
-                    </SheetContent>}
-                  </Sheet>
+                  <Button size="sm" variant="outline" className="rounded-full" onClick={() => { setCurrent(r); setReponse(""); }}>Traiter</Button>
                 </TableCell>
               </TableRow>
             ))}
+            {filtered.length === 0 && (
+              <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">Aucune réclamation ne correspond aux filtres.</TableCell></TableRow>
+            )}
           </TableBody>
         </Table>
       </Card>
+
+      <Sheet open={!!current} onOpenChange={(open) => { if (!open) setCurrent(null); }}>
+        {current && <SheetContent className="glass w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader><SheetTitle className="font-display text-2xl">{current.sujet}</SheetTitle></SheetHeader>
+          <div className="mt-6 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-secondary/40">
+                <div className="text-[10px] uppercase text-muted-foreground">Client</div>
+                <div className="text-sm font-medium">{current.client}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-secondary/40">
+                <div className="text-[10px] uppercase text-muted-foreground">Commande</div>
+                <div className="font-mono text-sm text-primary">{current.commande}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-secondary/40">
+                <div className="text-[10px] uppercase text-muted-foreground">Priorité</div>
+                <div className={prioColor[current.priorite] + " text-sm font-semibold"}>{current.priorite}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-secondary/40">
+                <div className="text-[10px] uppercase text-muted-foreground">Assignée à</div>
+                <div className="text-sm font-medium">{current.assignee ?? "Non assignée"}</div>
+              </div>
+            </div>
+            <div className="p-4 rounded-xl bg-secondary/40 text-sm leading-relaxed">{current.message}</div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" className="rounded-full" onClick={() => assignToMe(current)}><UserCheck className="h-4 w-4 mr-1" />M'assigner</Button>
+              <Button variant="outline" className="rounded-full" onClick={() => setStatut(current, "En cours")}>Mettre en cours</Button>
+              <Button variant="outline" className="rounded-full" onClick={() => setStatut(current, "Fermée")}><XCircle className="h-4 w-4 mr-1" />Fermer</Button>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Réponse au client</label>
+              <Textarea rows={4} placeholder="Bonjour, nous sommes désolés…" value={reponse} onChange={(e) => setReponse(e.target.value)} />
+            </div>
+            <div className="flex gap-2">
+              <Button className="flex-1 rounded-full bg-primary text-primary-foreground" onClick={sendResponse}><Send className="h-4 w-4 mr-1" />Envoyer</Button>
+              <Button variant="outline" className="rounded-full" onClick={() => setStatut(current, "Résolue")}><CheckCircle2 className="h-4 w-4 mr-1" />Résoudre</Button>
+            </div>
+          </div>
+        </SheetContent>}
+      </Sheet>
     </div>
   );
 }

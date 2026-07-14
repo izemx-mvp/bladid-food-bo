@@ -1,4 +1,5 @@
 import { useNavigate, useRouterState, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Bell, LogOut, Moon, Search, Sun, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -36,7 +37,25 @@ export function TopBar() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const session = getSession();
   const { theme, toggle } = useTheme();
+  const [globalSearch, setGlobalSearch] = useState("");
   const segments = pathname.split("/").filter(Boolean);
+
+  function runGlobalSearch() {
+    const term = globalSearch.trim().toLowerCase();
+    if (!term) return;
+    const match = [
+      { keys: ["commande", "order", "ldf"], to: "/commandes" as const },
+      { keys: ["client", "fidélité", "fidelite"], to: "/clients" as const },
+      { keys: ["livreur", "gps", "map", "carte"], to: "/livreurs" as const },
+      { keys: ["réclamation", "reclamation", "plainte"], to: "/reclamations" as const },
+      { keys: ["remboursement", "refund"], to: "/remboursements" as const },
+      { keys: ["promo", "code"], to: "/promotions" as const },
+      { keys: ["menu", "plat"], to: "/menu" as const },
+      { keys: ["rapport", "export"], to: "/rapports" as const },
+    ].find((item) => item.keys.some((k) => term.includes(k)));
+    navigate({ to: match?.to ?? "/commandes" });
+    toast.success("Recherche ouverte", { description: match ? "Module correspondant affiché" : "Commandes affichées par défaut" });
+  }
 
   function logout() {
     signOut();
@@ -72,7 +91,15 @@ export function TopBar() {
 
       <div className="hidden lg:block relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Rechercher commande, client…  ⌘K" className="pl-9 w-72 h-9 rounded-full bg-secondary border-0" />
+        <Input
+          placeholder="Rechercher commande, client…  ⌘K"
+          className="pl-9 w-72 h-9 rounded-full bg-secondary border-0"
+          value={globalSearch}
+          onChange={(e) => setGlobalSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") runGlobalSearch();
+          }}
+        />
       </div>
 
       <Button size="icon" variant="ghost" onClick={toggle} className="rounded-full" aria-label="Basculer le thème">
@@ -89,15 +116,15 @@ export function TopBar() {
         <DropdownMenuContent align="end" className="w-80">
           <DropdownMenuLabel>Notifications</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex-col items-start py-3">
+          <DropdownMenuItem className="flex-col items-start py-3" onClick={() => navigate({ to: "/reclamations" })}>
             <div className="text-sm font-medium">Nouvelle réclamation urgente</div>
             <div className="text-xs text-muted-foreground">Commande #LDF-2618 · il y a 5 min</div>
           </DropdownMenuItem>
-          <DropdownMenuItem className="flex-col items-start py-3">
+          <DropdownMenuItem className="flex-col items-start py-3" onClick={() => navigate({ to: "/livreurs" })}>
             <div className="text-sm font-medium">Livreur Youssef · en ligne</div>
             <div className="text-xs text-muted-foreground">Zone Kénitra Centre · il y a 12 min</div>
           </DropdownMenuItem>
-          <DropdownMenuItem className="flex-col items-start py-3">
+          <DropdownMenuItem className="flex-col items-start py-3" onClick={() => navigate({ to: "/remboursements" })}>
             <div className="text-sm font-medium">3 remboursements en attente</div>
             <div className="text-xs text-muted-foreground">À traiter aujourd'hui</div>
           </DropdownMenuItem>
@@ -119,7 +146,7 @@ export function TopBar() {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem><User className="h-4 w-4 mr-2" />Profil</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => { navigate({ to: "/utilisateurs" }); toast.success("Profil backoffice ouvert"); }}><User className="h-4 w-4 mr-2" />Profil</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="text-destructive">
             <LogOut className="h-4 w-4 mr-2" />Se déconnecter

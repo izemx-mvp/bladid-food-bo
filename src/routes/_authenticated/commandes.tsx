@@ -56,6 +56,19 @@ function Page() {
     toast.success(`${livreurNom} assigné à ${c.numero}`);
   }
 
+  function printTicket(c: Commande) {
+    const lines = c.items.map((it) => `${it.qte} × ${it.plat} — ${formatMAD(it.qte * it.prix)}`).join("\n");
+    const ticket = `LADID FOOD\n${c.numero}\n${formatDate(c.date)}\n\nClient: ${c.client}\nTel: ${c.telephone}\nAdresse: ${c.adresse}\n\n${lines}\n\nTOTAL: ${formatMAD(c.total)}\nPaiement: ${c.paiement}`;
+    const blob = new Blob([ticket], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${c.numero.replace("#", "")}-ticket.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Ticket téléchargé", { description: c.numero });
+  }
+
   function createOrder() {
     if (!form.client || !form.telephone) return toast.error("Client et téléphone obligatoires");
     const nb = data.length + 1;
@@ -148,7 +161,7 @@ function Page() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild><Link to="/commandes/$id" params={{ id: c.id }}><Eye className="h-4 w-4 mr-2" />Voir détails</Link></DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => toast.success("Ticket envoyé à l'imprimante")}><Printer className="h-4 w-4 mr-2" />Imprimer ticket</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => printTicket(c)}><Printer className="h-4 w-4 mr-2" />Imprimer ticket</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setAssignFor(c)}><Bike className="h-4 w-4 mr-2" />Assigner un livreur</DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => updateStatut(c.id, "En préparation")}><CheckCircle2 className="h-4 w-4 mr-2" />Passer en préparation</DropdownMenuItem>

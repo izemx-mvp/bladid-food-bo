@@ -19,6 +19,21 @@ const rapports = [
 ];
 
 function Page() {
+  function downloadReport(title: string, type: "csv" | "pdf") {
+    const slug = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const content = type === "csv"
+      ? ["jour,ventes,commandes", ...ventes7j.map((v) => `${v.jour},${v.ventes},${v.commandes}`)].join("\n")
+      : `${title}\n\nLadid Food Backoffice\n\n${ventes7j.map((v) => `${v.jour} — ${v.ventes} MAD — ${v.commandes} commandes`).join("\n")}`;
+    const blob = new Blob([content], { type: type === "csv" ? "text/csv;charset=utf-8" : "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slug}.${type === "csv" ? "csv" : "pdf.txt"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Export ${type.toUpperCase()} téléchargé`, { description: title });
+  }
+
   return (
     <div>
       <PageHeader icon={FileBarChart} title="Rapports & Exports" description="Analysez la performance de votre restaurant." />
@@ -44,8 +59,8 @@ function Page() {
             <h3 className="font-display text-lg mb-1">{r.titre}</h3>
             <p className="text-sm text-muted-foreground mb-4">{r.desc}</p>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => toast.success("Export CSV en cours…")}><Download className="h-3 w-3 mr-1" />CSV</Button>
-              <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => toast.success("Export PDF en cours…")}><Download className="h-3 w-3 mr-1" />PDF</Button>
+              <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => downloadReport(r.titre, "csv")}><Download className="h-3 w-3 mr-1" />CSV</Button>
+              <Button size="sm" variant="outline" className="flex-1 rounded-full" onClick={() => downloadReport(r.titre, "pdf")}><Download className="h-3 w-3 mr-1" />PDF</Button>
             </div>
           </Card>
         ))}

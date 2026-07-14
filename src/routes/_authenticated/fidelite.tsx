@@ -8,12 +8,28 @@ import { paliersFidelite, clients, formatMAD } from "@/lib/mock/data";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/fidelite")({ component: Page });
 
 function Page() {
+  const [rules, setRules] = useState({ points: 1, inscription: 100, anniversaire: 200 });
+  const [activeRewards, setActiveRewards] = useState<string[]>(["Thé à la menthe offert", "Dessert marocain offert"]);
   const totalPoints = clients.reduce((s, c) => s + c.points, 0);
   const platine = clients.filter((c) => c.niveau === "Platine").length;
+  const rewards = [
+    { pts: 200, gift: "Thé à la menthe offert" },
+    { pts: 500, gift: "Dessert marocain offert" },
+    { pts: 1000, gift: "Livraison offerte à vie" },
+    { pts: 1500, gift: "Tajine offert" },
+    { pts: 2500, gift: "Pack famille -50%" },
+    { pts: 5000, gift: "Dîner chef à domicile" },
+  ];
+
+  function toggleReward(gift: string) {
+    setActiveRewards((current) => current.includes(gift) ? current.filter((r) => r !== gift) : [...current, gift]);
+    toast.success(activeRewards.includes(gift) ? "Récompense désactivée" : "Récompense activée", { description: gift });
+  }
 
   return (
     <div>
@@ -44,18 +60,18 @@ function Page() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Points par 10 MAD dépensés</Label>
-            <Input defaultValue="1" type="number" />
+            <Input value={rules.points} type="number" min={0} onChange={(e) => setRules({ ...rules, points: +e.target.value })} />
           </div>
           <div>
             <Label>Bonus inscription (pts)</Label>
-            <Input defaultValue="100" type="number" />
+            <Input value={rules.inscription} type="number" min={0} onChange={(e) => setRules({ ...rules, inscription: +e.target.value })} />
           </div>
           <div>
             <Label>Bonus anniversaire (pts)</Label>
-            <Input defaultValue="200" type="number" />
+            <Input value={rules.anniversaire} type="number" min={0} onChange={(e) => setRules({ ...rules, anniversaire: +e.target.value })} />
           </div>
         </div>
-        <Button className="mt-4 rounded-full bg-primary text-primary-foreground" onClick={() => toast.success("Règles enregistrées")}>Enregistrer</Button>
+        <Button className="mt-4 rounded-full bg-primary text-primary-foreground" onClick={() => toast.success("Règles enregistrées", { description: `${rules.points} pt / 10 MAD · Bonus ${rules.inscription}/${rules.anniversaire}` })}>Enregistrer</Button>
       </Card>
 
       <h2 className="font-display text-2xl mb-4">Paliers</h2>
@@ -85,20 +101,15 @@ function Page() {
           <h3 className="font-display text-xl">Récompenses disponibles</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {[
-            { pts: 200, gift: "Thé à la menthe offert" },
-            { pts: 500, gift: "Dessert marocain offert" },
-            { pts: 1000, gift: "Livraison offerte à vie" },
-            { pts: 1500, gift: "Tajine offert" },
-            { pts: 2500, gift: "Pack famille -50%" },
-            { pts: 5000, gift: "Dîner chef à domicile" },
-          ].map((r) => (
+          {rewards.map((r) => (
             <div key={r.pts} className="p-4 rounded-xl bg-secondary/40 border border-border/50 flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">{r.gift}</div>
                 <div className="text-xs text-muted-foreground mt-1">{r.pts} points</div>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => toast.success("Récompense activée")}>Activer</Button>
+              <Button size="sm" variant={activeRewards.includes(r.gift) ? "outline" : "ghost"} onClick={() => toggleReward(r.gift)}>
+                {activeRewards.includes(r.gift) ? "Active" : "Activer"}
+              </Button>
             </div>
           ))}
         </div>
