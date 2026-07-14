@@ -220,19 +220,20 @@ export function LiveCityMap({
 }
 
 function LeafletMap({
+  RL,
+  L,
   livreurs,
   focus,
   onSelect,
   selectedId,
 }: {
+  RL: typeof import("react-leaflet");
+  L: typeof import("leaflet");
   livreurs: MapLivreur[];
   focus: MapLivreur | null;
   onSelect?: (l: MapLivreur) => void;
   selectedId?: string;
 }) {
-  // Import react-leaflet only on client to avoid SSR "window is not defined"
-  const RL = require("react-leaflet") as typeof import("react-leaflet");
-  const L = require("leaflet") as typeof import("leaflet");
   const { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } = RL;
 
   const restaurantPos = CENTER;
