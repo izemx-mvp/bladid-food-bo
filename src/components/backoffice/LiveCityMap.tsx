@@ -142,7 +142,7 @@ export function LiveCityMap({
         </div>
       )}
 
-      {livreurs.length > 0 && (
+      {loadFailed && livreurs.length > 0 && (
         <CourierHotspots livreurs={livreurs} focus={focus ?? null} onSelect={onSelect} selectedId={selectedId} />
       )}
 
