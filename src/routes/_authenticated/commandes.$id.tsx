@@ -110,7 +110,7 @@ function Detail() {
             <h3 className="font-display text-lg mb-3">Livraison</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2"><Bike className="h-4 w-4 text-primary" />{c.livreur ?? "Non assigné"}</div>
-              <Button size="sm" className="w-full rounded-full bg-primary text-primary-foreground mt-2" onClick={() => toast.success("Livreur Youssef Benali assigné")}>Assigner un livreur</Button>
+              <Button size="sm" className="w-full rounded-full bg-primary text-primary-foreground mt-2" onClick={() => setAssignOpen(true)}>{c.livreur ? "Réassigner un livreur" : "Assigner un livreur"}</Button>
             </div>
           </Card>
 
@@ -126,6 +126,13 @@ function Detail() {
           </Card>
         </div>
       </div>
+
+      <AssignerLivreurDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        numero={c.numero}
+        onAssign={(l) => { setC((p) => p ? { ...p, livreur: l.nom, statut: p.statut === "Reçue" ? "En préparation" : p.statut } : p); toast.success(`${l.nom} assigné à ${c.numero}`); }}
+      />
     </div>
   );
 }
