@@ -12,10 +12,22 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedUtilisateursRouteImport } from './routes/_authenticated/utilisateurs'
+import { Route as AuthenticatedRemboursementsRouteImport } from './routes/_authenticated/remboursements'
+import { Route as AuthenticatedReclamationsRouteImport } from './routes/_authenticated/reclamations'
+import { Route as AuthenticatedRapportsRouteImport } from './routes/_authenticated/rapports'
+import { Route as AuthenticatedPromotionsRouteImport } from './routes/_authenticated/promotions'
+import { Route as AuthenticatedPointsDeVenteRouteImport } from './routes/_authenticated/points-de-vente'
+import { Route as AuthenticatedParametresRouteImport } from './routes/_authenticated/parametres'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMenuRouteImport } from './routes/_authenticated/menu'
+import { Route as AuthenticatedLivreursRouteImport } from './routes/_authenticated/livreurs'
+import { Route as AuthenticatedFideliteRouteImport } from './routes/_authenticated/fidelite'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCommandesRouteImport } from './routes/_authenticated/commandes'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
+import { Route as AuthenticatedAvisRouteImport } from './routes/_authenticated/avis'
+import { Route as AuthenticatedLivreursIdRouteImport } from './routes/_authenticated/livreurs.$id'
 import { Route as AuthenticatedCommandesIdRouteImport } from './routes/_authenticated/commandes.$id'
 import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
 
@@ -33,9 +45,64 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedUtilisateursRoute =
+  AuthenticatedUtilisateursRouteImport.update({
+    id: '/utilisateurs',
+    path: '/utilisateurs',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedRemboursementsRoute =
+  AuthenticatedRemboursementsRouteImport.update({
+    id: '/remboursements',
+    path: '/remboursements',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReclamationsRoute =
+  AuthenticatedReclamationsRouteImport.update({
+    id: '/reclamations',
+    path: '/reclamations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedRapportsRoute = AuthenticatedRapportsRouteImport.update({
+  id: '/rapports',
+  path: '/rapports',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPromotionsRoute = AuthenticatedPromotionsRouteImport.update({
+  id: '/promotions',
+  path: '/promotions',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPointsDeVenteRoute =
+  AuthenticatedPointsDeVenteRouteImport.update({
+    id: '/points-de-vente',
+    path: '/points-de-vente',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedParametresRoute = AuthenticatedParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMenuRoute = AuthenticatedMenuRouteImport.update({
   id: '/menu',
   path: '/menu',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedLivreursRoute = AuthenticatedLivreursRouteImport.update({
+  id: '/livreurs',
+  path: '/livreurs',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFideliteRoute = AuthenticatedFideliteRouteImport.update({
+  id: '/fidelite',
+  path: '/fidelite',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -53,6 +120,16 @@ const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
   path: '/clients',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAvisRoute = AuthenticatedAvisRouteImport.update({
+  id: '/avis',
+  path: '/avis',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedLivreursIdRoute = AuthenticatedLivreursIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedLivreursRoute,
+} as any)
 const AuthenticatedCommandesIdRoute =
   AuthenticatedCommandesIdRouteImport.update({
     id: '/$id',
@@ -68,67 +145,139 @@ const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/avis': typeof AuthenticatedAvisRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/commandes': typeof AuthenticatedCommandesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fidelite': typeof AuthenticatedFideliteRoute
+  '/livreurs': typeof AuthenticatedLivreursRouteWithChildren
   '/menu': typeof AuthenticatedMenuRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/parametres': typeof AuthenticatedParametresRoute
+  '/points-de-vente': typeof AuthenticatedPointsDeVenteRoute
+  '/promotions': typeof AuthenticatedPromotionsRoute
+  '/rapports': typeof AuthenticatedRapportsRoute
+  '/reclamations': typeof AuthenticatedReclamationsRoute
+  '/remboursements': typeof AuthenticatedRemboursementsRoute
+  '/utilisateurs': typeof AuthenticatedUtilisateursRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/commandes/$id': typeof AuthenticatedCommandesIdRoute
+  '/livreurs/$id': typeof AuthenticatedLivreursIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/avis': typeof AuthenticatedAvisRoute
   '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/commandes': typeof AuthenticatedCommandesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fidelite': typeof AuthenticatedFideliteRoute
+  '/livreurs': typeof AuthenticatedLivreursRouteWithChildren
   '/menu': typeof AuthenticatedMenuRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/parametres': typeof AuthenticatedParametresRoute
+  '/points-de-vente': typeof AuthenticatedPointsDeVenteRoute
+  '/promotions': typeof AuthenticatedPromotionsRoute
+  '/rapports': typeof AuthenticatedRapportsRoute
+  '/reclamations': typeof AuthenticatedReclamationsRoute
+  '/remboursements': typeof AuthenticatedRemboursementsRoute
+  '/utilisateurs': typeof AuthenticatedUtilisateursRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/commandes/$id': typeof AuthenticatedCommandesIdRoute
+  '/livreurs/$id': typeof AuthenticatedLivreursIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/avis': typeof AuthenticatedAvisRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/commandes': typeof AuthenticatedCommandesRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/fidelite': typeof AuthenticatedFideliteRoute
+  '/_authenticated/livreurs': typeof AuthenticatedLivreursRouteWithChildren
   '/_authenticated/menu': typeof AuthenticatedMenuRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/parametres': typeof AuthenticatedParametresRoute
+  '/_authenticated/points-de-vente': typeof AuthenticatedPointsDeVenteRoute
+  '/_authenticated/promotions': typeof AuthenticatedPromotionsRoute
+  '/_authenticated/rapports': typeof AuthenticatedRapportsRoute
+  '/_authenticated/reclamations': typeof AuthenticatedReclamationsRoute
+  '/_authenticated/remboursements': typeof AuthenticatedRemboursementsRoute
+  '/_authenticated/utilisateurs': typeof AuthenticatedUtilisateursRoute
   '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
   '/_authenticated/commandes/$id': typeof AuthenticatedCommandesIdRoute
+  '/_authenticated/livreurs/$id': typeof AuthenticatedLivreursIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
+    | '/avis'
     | '/clients'
     | '/commandes'
     | '/dashboard'
+    | '/fidelite'
+    | '/livreurs'
     | '/menu'
+    | '/notifications'
+    | '/parametres'
+    | '/points-de-vente'
+    | '/promotions'
+    | '/rapports'
+    | '/reclamations'
+    | '/remboursements'
+    | '/utilisateurs'
     | '/clients/$id'
     | '/commandes/$id'
+    | '/livreurs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/avis'
     | '/clients'
     | '/commandes'
     | '/dashboard'
+    | '/fidelite'
+    | '/livreurs'
     | '/menu'
+    | '/notifications'
+    | '/parametres'
+    | '/points-de-vente'
+    | '/promotions'
+    | '/rapports'
+    | '/reclamations'
+    | '/remboursements'
+    | '/utilisateurs'
     | '/clients/$id'
     | '/commandes/$id'
+    | '/livreurs/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/avis'
     | '/_authenticated/clients'
     | '/_authenticated/commandes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/fidelite'
+    | '/_authenticated/livreurs'
     | '/_authenticated/menu'
+    | '/_authenticated/notifications'
+    | '/_authenticated/parametres'
+    | '/_authenticated/points-de-vente'
+    | '/_authenticated/promotions'
+    | '/_authenticated/rapports'
+    | '/_authenticated/reclamations'
+    | '/_authenticated/remboursements'
+    | '/_authenticated/utilisateurs'
     | '/_authenticated/clients/$id'
     | '/_authenticated/commandes/$id'
+    | '/_authenticated/livreurs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -160,11 +309,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/utilisateurs': {
+      id: '/_authenticated/utilisateurs'
+      path: '/utilisateurs'
+      fullPath: '/utilisateurs'
+      preLoaderRoute: typeof AuthenticatedUtilisateursRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/remboursements': {
+      id: '/_authenticated/remboursements'
+      path: '/remboursements'
+      fullPath: '/remboursements'
+      preLoaderRoute: typeof AuthenticatedRemboursementsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reclamations': {
+      id: '/_authenticated/reclamations'
+      path: '/reclamations'
+      fullPath: '/reclamations'
+      preLoaderRoute: typeof AuthenticatedReclamationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rapports': {
+      id: '/_authenticated/rapports'
+      path: '/rapports'
+      fullPath: '/rapports'
+      preLoaderRoute: typeof AuthenticatedRapportsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/promotions': {
+      id: '/_authenticated/promotions'
+      path: '/promotions'
+      fullPath: '/promotions'
+      preLoaderRoute: typeof AuthenticatedPromotionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/points-de-vente': {
+      id: '/_authenticated/points-de-vente'
+      path: '/points-de-vente'
+      fullPath: '/points-de-vente'
+      preLoaderRoute: typeof AuthenticatedPointsDeVenteRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/parametres': {
+      id: '/_authenticated/parametres'
+      path: '/parametres'
+      fullPath: '/parametres'
+      preLoaderRoute: typeof AuthenticatedParametresRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/menu': {
       id: '/_authenticated/menu'
       path: '/menu'
       fullPath: '/menu'
       preLoaderRoute: typeof AuthenticatedMenuRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/livreurs': {
+      id: '/_authenticated/livreurs'
+      path: '/livreurs'
+      fullPath: '/livreurs'
+      preLoaderRoute: typeof AuthenticatedLivreursRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/fidelite': {
+      id: '/_authenticated/fidelite'
+      path: '/fidelite'
+      fullPath: '/fidelite'
+      preLoaderRoute: typeof AuthenticatedFideliteRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -187,6 +406,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/clients'
       preLoaderRoute: typeof AuthenticatedClientsRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/avis': {
+      id: '/_authenticated/avis'
+      path: '/avis'
+      fullPath: '/avis'
+      preLoaderRoute: typeof AuthenticatedAvisRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/livreurs/$id': {
+      id: '/_authenticated/livreurs/$id'
+      path: '/$id'
+      fullPath: '/livreurs/$id'
+      preLoaderRoute: typeof AuthenticatedLivreursIdRouteImport
+      parentRoute: typeof AuthenticatedLivreursRoute
     }
     '/_authenticated/commandes/$id': {
       id: '/_authenticated/commandes/$id'
@@ -230,18 +463,53 @@ const AuthenticatedCommandesRouteWithChildren =
     AuthenticatedCommandesRouteChildren,
   )
 
+interface AuthenticatedLivreursRouteChildren {
+  AuthenticatedLivreursIdRoute: typeof AuthenticatedLivreursIdRoute
+}
+
+const AuthenticatedLivreursRouteChildren: AuthenticatedLivreursRouteChildren = {
+  AuthenticatedLivreursIdRoute: AuthenticatedLivreursIdRoute,
+}
+
+const AuthenticatedLivreursRouteWithChildren =
+  AuthenticatedLivreursRoute._addFileChildren(
+    AuthenticatedLivreursRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
+  AuthenticatedAvisRoute: typeof AuthenticatedAvisRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedCommandesRoute: typeof AuthenticatedCommandesRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFideliteRoute: typeof AuthenticatedFideliteRoute
+  AuthenticatedLivreursRoute: typeof AuthenticatedLivreursRouteWithChildren
   AuthenticatedMenuRoute: typeof AuthenticatedMenuRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedParametresRoute: typeof AuthenticatedParametresRoute
+  AuthenticatedPointsDeVenteRoute: typeof AuthenticatedPointsDeVenteRoute
+  AuthenticatedPromotionsRoute: typeof AuthenticatedPromotionsRoute
+  AuthenticatedRapportsRoute: typeof AuthenticatedRapportsRoute
+  AuthenticatedReclamationsRoute: typeof AuthenticatedReclamationsRoute
+  AuthenticatedRemboursementsRoute: typeof AuthenticatedRemboursementsRoute
+  AuthenticatedUtilisateursRoute: typeof AuthenticatedUtilisateursRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAvisRoute: AuthenticatedAvisRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedCommandesRoute: AuthenticatedCommandesRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFideliteRoute: AuthenticatedFideliteRoute,
+  AuthenticatedLivreursRoute: AuthenticatedLivreursRouteWithChildren,
   AuthenticatedMenuRoute: AuthenticatedMenuRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedParametresRoute: AuthenticatedParametresRoute,
+  AuthenticatedPointsDeVenteRoute: AuthenticatedPointsDeVenteRoute,
+  AuthenticatedPromotionsRoute: AuthenticatedPromotionsRoute,
+  AuthenticatedRapportsRoute: AuthenticatedRapportsRoute,
+  AuthenticatedReclamationsRoute: AuthenticatedReclamationsRoute,
+  AuthenticatedRemboursementsRoute: AuthenticatedRemboursementsRoute,
+  AuthenticatedUtilisateursRoute: AuthenticatedUtilisateursRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
