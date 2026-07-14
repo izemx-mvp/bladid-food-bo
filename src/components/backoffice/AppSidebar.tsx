@@ -12,7 +12,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard, ShoppingBag, UtensilsCrossed, Users, MessageSquareWarning, Wallet, Award, TicketPercent, Bike, Store, ShieldCheck, Star, BellRing, FileBarChart, Settings2,
+  LayoutDashboard, ShoppingBag, UtensilsCrossed, Users, MessageSquareWarning, Wallet, Award, TicketPercent, Bike, Store, ShieldCheck, Star, BellRing, FileBarChart,
 } from "lucide-react";
 import { LOGO_URL } from "@/lib/mock/data";
 
@@ -54,7 +54,6 @@ const groups = [
     items: [
       { title: "Utilisateurs", url: "/utilisateurs", icon: ShieldCheck },
       { title: "Rapports", url: "/rapports", icon: FileBarChart },
-      { title: "Paramètres", url: "/parametres", icon: Settings2 },
     ],
   },
 ];
@@ -70,7 +69,7 @@ export function AppSidebar() {
           <img
             src={LOGO_URL}
             alt="Ladid Food"
-            className="h-12 w-auto group-data-[collapsible=icon]:h-8"
+            className="h-16 w-auto group-data-[collapsible=icon]:h-9 transition-all drop-shadow-sm"
           />
         </div>
       </SidebarHeader>

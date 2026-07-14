@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { ShieldCheck, Plus, Edit, Trash2, KeyRound } from "lucide-react";
+import { ShieldCheck, Plus, Edit, Trash2, KeyRound, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,14 @@ function Page() {
   const [editing, setEditing] = useState<Utilisateur | null>(null);
   const [form, setForm] = useState<Utilisateur>(empty);
   const [password, setPassword] = useState("");
+  const [q, setQ] = useState("");
+  const [roleF, setRoleF] = useState("all");
+
+  const filtered = data.filter((u) => {
+    if (roleF !== "all" && u.role !== roleF) return false;
+    if (q && !u.nom.toLowerCase().includes(q.toLowerCase()) && !u.email.toLowerCase().includes(q.toLowerCase())) return false;
+    return true;
+  });
 
   function openAdd() { setEditing(null); setForm(empty); setPassword(""); setOpen(true); }
   function openEdit(u: Utilisateur) { setEditing(u); setForm(u); setPassword(""); setOpen(true); }
@@ -59,6 +67,20 @@ function Page() {
         actions={<Button className="rounded-full bg-primary text-primary-foreground" onClick={openAdd}><Plus className="h-4 w-4 mr-1" />Ajouter un utilisateur</Button>}
       />
 
+      <Card className="glass p-4 mb-4 flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Rechercher nom ou email…" className="pl-9 bg-secondary/60 border-0" value={q} onChange={(e) => setQ(e.target.value)} />
+        </div>
+        <Select value={roleF} onValueChange={setRoleF}>
+          <SelectTrigger className="w-48 bg-secondary/60 border-0"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les rôles</SelectItem>
+            {roles.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </Card>
+
       <Card className="glass overflow-hidden">
         <Table>
           <TableHeader>
@@ -72,7 +94,7 @@ function Page() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((u) => (
+            {filtered.map((u) => (
               <TableRow key={u.id} className="border-border/30">
                 <TableCell>
                   <div className="flex items-center gap-3">

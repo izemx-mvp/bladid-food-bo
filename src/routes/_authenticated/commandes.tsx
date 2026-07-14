@@ -6,11 +6,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Dialog } from "@/components/ui/dialog";
 import { commandes as seed, formatMAD, formatDate, type Commande } from "@/lib/mock/data";
 import { toast } from "sonner";
+import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
+import { AssignerLivreurDialog } from "@/components/backoffice/AssignerLivreurDialog";
 
 export const Route = createFileRoute("/_authenticated/commandes")({ component: Page });
 
@@ -23,11 +27,17 @@ const statutColor: Record<Commande["statut"], string> = {
   "Annulée": "bg-destructive/20 text-destructive border-destructive/30",
 };
 
+type NewOrder = { client: string; telephone: string; canal: Commande["canal"]; plat: string; qte: number; prix: number; adresse: string; paiement: Commande["paiement"]; note: string };
+const emptyNew: NewOrder = { client: "", telephone: "", canal: "Téléphone", plat: "Tajine Poulet aux Olives", qte: 1, prix: 85, adresse: "", paiement: "Espèces", note: "" };
+
 function Page() {
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
   const [statut, setStatut] = useState<string>("all");
   const [canal, setCanal] = useState<string>("all");
+  const [assignFor, setAssignFor] = useState<Commande | null>(null);
+  const [openNew, setOpenNew] = useState(false);
+  const [form, setForm] = useState<NewOrder>(emptyNew);
 
   const filtered = data.filter((c) => {
     if (statut !== "all" && c.statut !== statut) return false;
@@ -41,13 +51,43 @@ function Page() {
     toast.success(`Commande mise à jour`, { description: `Nouveau statut : ${s}` });
   }
 
+  function assign(c: Commande, livreurNom: string) {
+    setData((d) => d.map((x) => x.id === c.id ? { ...x, livreur: livreurNom, statut: x.statut === "Reçue" ? "En préparation" : x.statut } : x));
+    toast.success(`${livreurNom} assigné à ${c.numero}`);
+  }
+
+  function createOrder() {
+    if (!form.client || !form.telephone) return toast.error("Client et téléphone obligatoires");
+    const nb = data.length + 1;
+    const total = form.qte * form.prix;
+    const cmd: Commande = {
+      id: `cmd_${Date.now()}`,
+      numero: `#LDF-${2600 + nb}`,
+      client: form.client,
+      telephone: form.telephone,
+      canal: form.canal,
+      items: [{ plat: form.plat, qte: form.qte, prix: form.prix }],
+      total,
+      statut: "Reçue",
+      paiement: form.paiement,
+      livreur: null,
+      adresse: form.adresse || "Adresse à préciser, Kénitra",
+      date: new Date().toISOString(),
+      note: form.note || undefined,
+    };
+    setData((d) => [cmd, ...d]);
+    setOpenNew(false);
+    setForm(emptyNew);
+    toast.success(`Commande ${cmd.numero} créée`);
+  }
+
   return (
     <div>
       <PageHeader
         icon={ShoppingBag}
         title="Commandes"
         description={`${filtered.length} commandes · CA total ${formatMAD(filtered.reduce((s, c) => s + c.total, 0))}`}
-        actions={<Button className="rounded-full bg-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />Nouvelle commande</Button>}
+        actions={<Button className="rounded-full bg-primary text-primary-foreground" onClick={() => { setForm(emptyNew); setOpenNew(true); }}><Plus className="h-4 w-4 mr-1" />Nouvelle commande</Button>}
       />
 
       <Card className="glass p-4 mb-4 flex flex-wrap gap-3 items-center">
@@ -69,6 +109,9 @@ function Page() {
             {["App Mobile","WhatsApp","Site Web","Téléphone"].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
+        {(q || statut !== "all" || canal !== "all") && (
+          <Button variant="ghost" size="sm" onClick={() => { setQ(""); setStatut("all"); setCanal("all"); }}>Réinitialiser</Button>
+        )}
       </Card>
 
       <Card className="glass overflow-hidden">
@@ -105,10 +148,11 @@ function Page() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild><Link to="/commandes/$id" params={{ id: c.id }}><Eye className="h-4 w-4 mr-2" />Voir détails</Link></DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { toast.success("Ticket envoyé à l'imprimante"); }}><Printer className="h-4 w-4 mr-2" />Imprimer ticket</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => { toast.success("Livreur assigné automatiquement"); }}><Bike className="h-4 w-4 mr-2" />Assigner livreur</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toast.success("Ticket envoyé à l'imprimante")}><Printer className="h-4 w-4 mr-2" />Imprimer ticket</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setAssignFor(c)}><Bike className="h-4 w-4 mr-2" />Assigner un livreur</DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => updateStatut(c.id, "En préparation")}><CheckCircle2 className="h-4 w-4 mr-2" />Passer en préparation</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => updateStatut(c.id, "Prête")}><CheckCircle2 className="h-4 w-4 mr-2" />Marquer prête</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => updateStatut(c.id, "Livrée")}><CheckCircle2 className="h-4 w-4 mr-2" />Marquer livrée</DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive" onClick={() => updateStatut(c.id, "Annulée")}><XCircle className="h-4 w-4 mr-2" />Annuler</DropdownMenuItem>
                     </DropdownMenuContent>
@@ -116,9 +160,67 @@ function Page() {
                 </TableCell>
               </TableRow>
             ))}
+            {filtered.length === 0 && (
+              <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">Aucune commande ne correspond à ces filtres.</TableCell></TableRow>
+            )}
           </TableBody>
         </Table>
       </Card>
+
+      <AssignerLivreurDialog
+        open={!!assignFor}
+        onOpenChange={(o) => !o && setAssignFor(null)}
+        numero={assignFor?.numero}
+        onAssign={(l) => assignFor && assign(assignFor, l.nom)}
+      />
+
+      <Dialog open={openNew} onOpenChange={setOpenNew}>
+        <FormShell
+          title="Nouvelle commande manuelle"
+          subtitle="Enregistrez une commande reçue par téléphone ou en salle."
+          icon={<ShoppingBag className="h-5 w-5" />}
+          onSubmit={createOrder}
+          onCancel={() => setOpenNew(false)}
+          submitLabel="Enregistrer la commande"
+        >
+          <FieldGroup title="Client">
+            <Row>
+              <div><Label>Nom du client</Label><Input value={form.client} onChange={(e) => setForm({ ...form, client: e.target.value })} placeholder="Fatima Zahra Idrissi" /></div>
+              <div><Label>Téléphone</Label><Input value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} placeholder="06 12 34 56 78" /></div>
+            </Row>
+            <div><Label>Adresse de livraison</Label><Input value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} placeholder="12 Rue Mohammed V, Kénitra Centre" /></div>
+          </FieldGroup>
+
+          <FieldGroup title="Détail de la commande">
+            <div><Label>Plat commandé</Label><Input value={form.plat} onChange={(e) => setForm({ ...form, plat: e.target.value })} /></div>
+            <Row>
+              <div><Label>Quantité</Label><Input type="number" min={1} value={form.qte} onChange={(e) => setForm({ ...form, qte: +e.target.value })} /></div>
+              <div><Label>Prix unitaire (MAD)</Label><Input type="number" value={form.prix} onChange={(e) => setForm({ ...form, prix: +e.target.value })} /></div>
+            </Row>
+            <div className="text-right text-sm text-muted-foreground">Total : <span className="font-display text-lg text-primary">{formatMAD(form.qte * form.prix)}</span></div>
+          </FieldGroup>
+
+          <FieldGroup title="Paiement & canal">
+            <Row>
+              <div>
+                <Label>Canal</Label>
+                <Select value={form.canal} onValueChange={(v) => setForm({ ...form, canal: v as Commande["canal"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{(["Téléphone","WhatsApp","App Mobile","Site Web"] as const).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Paiement</Label>
+                <Select value={form.paiement} onValueChange={(v) => setForm({ ...form, paiement: v as Commande["paiement"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{(["Espèces","Carte","En ligne"] as const).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </Row>
+            <div><Label>Note client (optionnelle)</Label><Input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="Sans oignons, bien cuit, sonner à la porte…" /></div>
+          </FieldGroup>
+        </FormShell>
+      </Dialog>
     </div>
   );
 }

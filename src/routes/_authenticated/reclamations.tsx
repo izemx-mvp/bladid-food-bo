@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { MessageSquareWarning, Search, MoreHorizontal, CheckCircle2, Send } from "lucide-react";
+import { MessageSquareWarning, Search, CheckCircle2, Send } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { reclamations as seed, formatDate, type Reclamation } from "@/lib/mock/data";
 import { toast } from "sonner";
 
@@ -31,10 +31,17 @@ const prioColor: Record<Reclamation["priorite"], string> = {
 function Page() {
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
+  const [statutF, setStatutF] = useState("all");
+  const [prioF, setPrioF] = useState("all");
   const [current, setCurrent] = useState<Reclamation | null>(null);
   const [reponse, setReponse] = useState("");
 
-  const filtered = data.filter((r) => r.client.toLowerCase().includes(q.toLowerCase()) || r.sujet.toLowerCase().includes(q.toLowerCase()));
+  const filtered = data.filter((r) => {
+    if (statutF !== "all" && r.statut !== statutF) return false;
+    if (prioF !== "all" && r.priorite !== prioF) return false;
+    if (q && !r.client.toLowerCase().includes(q.toLowerCase()) && !r.sujet.toLowerCase().includes(q.toLowerCase()) && !r.commande.toLowerCase().includes(q.toLowerCase())) return false;
+    return true;
+  });
 
   function setStatut(r: Reclamation, s: Reclamation["statut"]) {
     setData((d) => d.map((x) => x.id === r.id ? { ...x, statut: s } : x));
@@ -49,11 +56,25 @@ function Page() {
         description={`${data.filter((r) => r.statut === "Nouvelle").length} nouvelles · ${data.filter((r) => r.priorite === "Urgente").length} urgentes`}
       />
 
-      <Card className="glass p-4 mb-4">
-        <div className="relative">
+      <Card className="glass p-4 mb-4 flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher…" className="pl-9 bg-secondary/60 border-0 max-w-md" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input placeholder="Rechercher client, sujet ou n° commande…" className="pl-9 bg-secondary/60 border-0" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
+        <Select value={statutF} onValueChange={setStatutF}>
+          <SelectTrigger className="w-40 bg-secondary/60 border-0"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous statuts</SelectItem>
+            {(["Nouvelle","En cours","Résolue","Fermée"] as const).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={prioF} onValueChange={setPrioF}>
+          <SelectTrigger className="w-40 bg-secondary/60 border-0"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes priorités</SelectItem>
+            {(["Basse","Moyenne","Haute","Urgente"] as const).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </Card>
 
       <Card className="glass overflow-hidden">

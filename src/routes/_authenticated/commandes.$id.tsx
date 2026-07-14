@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { commandes, formatMAD, formatDate } from "@/lib/mock/data";
 import { PageHeader } from "@/components/backoffice/PageHeader";
 import { ArrowLeft, MapPin, Phone, User, Wallet, Bike, ChefHat, PackageCheck, CheckCircle2, ClipboardList, XCircle, Printer } from "lucide-react";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { AssignerLivreurDialog } from "@/components/backoffice/AssignerLivreurDialog";
 
 export const Route = createFileRoute("/_authenticated/commandes/$id")({
   component: Detail,
@@ -24,7 +26,9 @@ const timeline = [
 function Detail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const c = commandes.find((x) => x.id === id);
+  const initial = commandes.find((x) => x.id === id);
+  const [c, setC] = useState(initial);
+  const [assignOpen, setAssignOpen] = useState(false);
   if (!c) return <div className="p-8">Introuvable</div>;
 
   const currentStep = timeline.findIndex((t) => t.key === c.statut);
@@ -39,7 +43,7 @@ function Detail() {
         actions={
           <>
             <Button variant="outline" className="rounded-full" onClick={() => toast.success("Ticket imprimé")}><Printer className="h-4 w-4 mr-1" />Imprimer</Button>
-            <Button className="rounded-full bg-destructive text-destructive-foreground" onClick={() => toast.warning("Commande annulée")}><XCircle className="h-4 w-4 mr-1" />Annuler</Button>
+            <Button className="rounded-full bg-destructive text-destructive-foreground" onClick={() => { setC((p) => p ? { ...p, statut: "Annulée" } : p); toast.warning("Commande annulée"); }}><XCircle className="h-4 w-4 mr-1" />Annuler</Button>
           </>
         }
       />
@@ -106,7 +110,7 @@ function Detail() {
             <h3 className="font-display text-lg mb-3">Livraison</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2"><Bike className="h-4 w-4 text-primary" />{c.livreur ?? "Non assigné"}</div>
-              <Button size="sm" className="w-full rounded-full bg-primary text-primary-foreground mt-2" onClick={() => toast.success("Livreur Youssef Benali assigné")}>Assigner un livreur</Button>
+              <Button size="sm" className="w-full rounded-full bg-primary text-primary-foreground mt-2" onClick={() => setAssignOpen(true)}>{c.livreur ? "Réassigner un livreur" : "Assigner un livreur"}</Button>
             </div>
           </Card>
 
@@ -122,6 +126,13 @@ function Detail() {
           </Card>
         </div>
       </div>
+
+      <AssignerLivreurDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        numero={c.numero}
+        onAssign={(l) => { setC((p) => p ? { ...p, livreur: l.nom, statut: p.statut === "Reçue" ? "En préparation" : p.statut } : p); toast.success(`${l.nom} assigné à ${c.numero}`); }}
+      />
     </div>
   );
 }

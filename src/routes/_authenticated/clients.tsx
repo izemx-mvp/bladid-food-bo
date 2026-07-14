@@ -29,11 +29,19 @@ const empty: Client = { id: "", nom: "", email: "", telephone: "", adresses: [""
 function Page() {
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
+  const [niveauF, setNiveauF] = useState("all");
+  const [statutF, setStatutF] = useState("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Client | null>(null);
   const [form, setForm] = useState<Client>(empty);
 
-  const filtered = data.filter((c) => c.nom.toLowerCase().includes(q.toLowerCase()) || c.email.toLowerCase().includes(q.toLowerCase()));
+  const filtered = data.filter((c) => {
+    if (niveauF !== "all" && c.niveau !== niveauF) return false;
+    if (statutF === "actifs" && !c.actif) return false;
+    if (statutF === "bloques" && c.actif) return false;
+    if (q && !c.nom.toLowerCase().includes(q.toLowerCase()) && !c.email.toLowerCase().includes(q.toLowerCase()) && !c.telephone.includes(q)) return false;
+    return true;
+  });
 
   function openAdd() { setEditing(null); setForm(empty); setOpen(true); }
   function openEdit(c: Client) { setEditing(c); setForm(c); setOpen(true); }
@@ -74,11 +82,26 @@ function Page() {
         actions={<Button className="rounded-full bg-primary text-primary-foreground" onClick={openAdd}><Plus className="h-4 w-4 mr-1" />Ajouter un client</Button>}
       />
 
-      <Card className="glass p-4 mb-4">
-        <div className="relative">
+      <Card className="glass p-4 mb-4 flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher un client par nom ou email…" className="pl-9 bg-secondary/60 border-0 max-w-md" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input placeholder="Rechercher nom, email ou téléphone…" className="pl-9 bg-secondary/60 border-0" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
+        <Select value={niveauF} onValueChange={setNiveauF}>
+          <SelectTrigger className="w-40 bg-secondary/60 border-0"><SelectValue placeholder="Niveau" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous niveaux</SelectItem>
+            {(["Bronze","Argent","Or","Platine"] as const).map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={statutF} onValueChange={setStatutF}>
+          <SelectTrigger className="w-40 bg-secondary/60 border-0"><SelectValue placeholder="Statut" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous statuts</SelectItem>
+            <SelectItem value="actifs">Actifs</SelectItem>
+            <SelectItem value="bloques">Bloqués</SelectItem>
+          </SelectContent>
+        </Select>
       </Card>
 
       <Card className="glass overflow-hidden">

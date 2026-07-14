@@ -1,6 +1,6 @@
 import { useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, LogOut, Moon, Search, Settings2, Sun, User } from "lucide-react";
+import { Bell, LogOut, Moon, Search, Sun, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,6 @@ const labels: Record<string, string> = {
   avis: "Avis clients",
   notifications: "Notifications",
   rapports: "Rapports",
-  parametres: "Paramètres",
 };
 
 export function TopBar() {
@@ -121,7 +120,6 @@ export function TopBar() {
           <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem><User className="h-4 w-4 mr-2" />Profil</DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/parametres"><Settings2 className="h-4 w-4 mr-2" /> Paramètres</Link></DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="text-destructive">
             <LogOut className="h-4 w-4 mr-2" />Se déconnecter
