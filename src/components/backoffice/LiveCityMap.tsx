@@ -142,6 +142,10 @@ export function LiveCityMap({
         </div>
       )}
 
+      {livreurs.length > 0 && (
+        <CourierHotspots livreurs={livreurs} focus={focus ?? null} onSelect={onSelect} selectedId={selectedId} />
+      )}
+
       {loadFailed && libs && (
         <div className="pointer-events-none absolute bottom-3 right-3 z-[500] rounded-full bg-background/95 border border-border px-3 py-1.5 text-[11px] text-muted-foreground shadow-md">
           Fond cartographique local actif
@@ -230,6 +234,46 @@ export function LiveCityMap({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function CourierHotspots({
+  livreurs,
+  focus,
+  onSelect,
+  selectedId,
+}: {
+  livreurs: MapLivreur[];
+  focus: MapLivreur | null;
+  onSelect?: (l: MapLivreur) => void;
+  selectedId?: string;
+}) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-[480]">
+      {livreurs.map((l) => {
+        const selected = selectedId === l.id || focus?.id === l.id;
+        const initials = l.nom.split(" ").map((n) => n[0]).join("").slice(0, 2);
+        return (
+          <button
+            key={l.id}
+            type="button"
+            className={`pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 rounded-full shadow-xl transition duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background ${selected ? "scale-110" : ""}`}
+            style={{ left: `${l.x}%`, top: `${l.y}%` }}
+            onClick={() => onSelect?.(l)}
+            aria-label={`Voir détails ${l.nom}`}
+            title={`${l.nom} · ${l.statut}`}
+          >
+            {l.statut === "En livraison" && <span className="absolute inset-0 rounded-full bg-primary/35 animate-ping" />}
+            <span
+              className="relative flex h-9 w-9 items-center justify-center rounded-full text-[10px] font-bold text-white ring-3 ring-background"
+              style={{ background: statutColor[l.statut] }}
+            >
+              {initials || <BikeIcon className="h-4 w-4" />}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
