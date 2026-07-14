@@ -54,7 +54,6 @@ const groups = [
     items: [
       { title: "Utilisateurs", url: "/utilisateurs", icon: ShieldCheck },
       { title: "Rapports", url: "/rapports", icon: FileBarChart },
-      { title: "Paramètres", url: "/parametres", icon: Settings2 },
     ],
   },
 ];
