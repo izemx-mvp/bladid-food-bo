@@ -1,6 +1,6 @@
 import { useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, LogOut, Moon, Search, Settings2, Sun, User } from "lucide-react";
+import { Bell, LogOut, Moon, Search, Sun, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
