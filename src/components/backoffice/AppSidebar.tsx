@@ -69,7 +69,7 @@ export function AppSidebar() {
           <img
             src={LOGO_URL}
             alt="Ladid Food"
-            className="h-12 w-auto group-data-[collapsible=icon]:h-8"
+            className="h-16 w-auto group-data-[collapsible=icon]:h-9 transition-all drop-shadow-sm"
           />
         </div>
       </SidebarHeader>
