@@ -34,6 +34,14 @@ function Page() {
   const [editing, setEditing] = useState<Utilisateur | null>(null);
   const [form, setForm] = useState<Utilisateur>(empty);
   const [password, setPassword] = useState("");
+  const [q, setQ] = useState("");
+  const [roleF, setRoleF] = useState("all");
+
+  const filtered = data.filter((u) => {
+    if (roleF !== "all" && u.role !== roleF) return false;
+    if (q && !u.nom.toLowerCase().includes(q.toLowerCase()) && !u.email.toLowerCase().includes(q.toLowerCase())) return false;
+    return true;
+  });
 
   function openAdd() { setEditing(null); setForm(empty); setPassword(""); setOpen(true); }
   function openEdit(u: Utilisateur) { setEditing(u); setForm(u); setPassword(""); setOpen(true); }
