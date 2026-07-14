@@ -12,7 +12,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import {
-  LayoutDashboard, ShoppingBag, UtensilsCrossed, Users, MessageSquareWarning, Wallet, Award, TicketPercent, Bike, Store, ShieldCheck, Star, BellRing, FileBarChart, Settings2,
+  LayoutDashboard, ShoppingBag, UtensilsCrossed, Users, MessageSquareWarning, Wallet, Award, TicketPercent, Bike, Store, ShieldCheck, Star, BellRing, FileBarChart,
 } from "lucide-react";
 import { LOGO_URL } from "@/lib/mock/data";
 
