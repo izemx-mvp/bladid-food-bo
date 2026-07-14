@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { commandes, formatMAD, formatDate } from "@/lib/mock/data";
 import { PageHeader } from "@/components/backoffice/PageHeader";
 import { ArrowLeft, MapPin, Phone, User, Wallet, Bike, ChefHat, PackageCheck, CheckCircle2, ClipboardList, XCircle, Printer } from "lucide-react";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { AssignerLivreurDialog } from "@/components/backoffice/AssignerLivreurDialog";
 
 export const Route = createFileRoute("/_authenticated/commandes/$id")({
   component: Detail,
