@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
-import { MapPin, Navigation2, Home, Bike as BikeIcon, Clock, Zap, Route as RouteIcon, Phone } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Home, Bike as BikeIcon, Clock, Zap, Route as RouteIcon, Phone, Navigation2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import "leaflet/dist/leaflet.css";
 
 export type MapLivreur = {
   id: string;
   nom: string;
   telephone?: string;
-  x: number; // 0..100 position on map
+  x: number; // 0..100 legacy virtual coord
   y: number;
   destX?: number;
   destY?: number;
@@ -15,13 +16,23 @@ export type MapLivreur = {
   vehicule?: string;
   commande?: string;
   client?: string;
-  eta?: number; // minutes
-  distance?: number; // km
+  eta?: number;
+  distance?: number;
+  adresse?: string;
 };
 
-const RESTAURANT = { x: 50, y: 50, label: "Ladid Food — Kénitra Centre" };
+// Kénitra center + bounds used to project the pseudo-coords into real geo
+const CENTER: [number, number] = [34.261, -6.5802];
+const LAT_SPAN = 0.05;
+const LNG_SPAN = 0.07;
 
-// deterministic pseudo positions across the "city"
+function toLatLng(x: number, y: number): [number, number] {
+  // x,y in 0..100 -> around center
+  const lat = CENTER[0] + LAT_SPAN * (0.5 - y / 100);
+  const lng = CENTER[1] + LNG_SPAN * (x / 100 - 0.5);
+  return [lat, lng];
+}
+
 function seedPos(id: string) {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 131 + id.charCodeAt(i)) >>> 0;
@@ -54,6 +65,7 @@ export function buildMapLivreurs(
         destY: p.dy,
         commande: cmd?.numero ?? `#LDF-${2600 + (p.x % 32)}`,
         client: cmd?.client ?? "Client Ladid",
+        adresse: cmd?.adresse ?? "Av. Mohammed V, Kénitra",
         eta,
         distance,
       };
@@ -70,11 +82,11 @@ export function buildMapLivreurs(
   });
 }
 
-const statutFill: Record<MapLivreur["statut"], string> = {
-  "En ligne": "var(--chart-5)",
-  "En livraison": "var(--primary)",
-  "En pause": "var(--accent)",
-  "Hors ligne": "var(--muted-foreground)",
+const statutColor: Record<MapLivreur["statut"], string> = {
+  "En ligne": "#10b981",
+  "En livraison": "#0d9488",
+  "En pause": "#f59e0b",
+  "Hors ligne": "#6b7280",
 };
 
 export function LiveCityMap({
@@ -90,151 +102,44 @@ export function LiveCityMap({
   onSelect?: (l: MapLivreur) => void;
   selectedId?: string;
 }) {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setTick((v) => v + 1), 1500);
-    return () => clearInterval(t);
-  }, []);
-
-  // when tracking a single livreur, smoothly move him toward destination
-  const focusLive = focus
-    ? (() => {
-        if (!focus.destX || !focus.destY) return focus;
-        const progress = Math.min(0.95, ((tick % 30) / 30) * 0.9 + 0.05);
-        return {
-          ...focus,
-          x: focus.x + (focus.destX - focus.x) * progress,
-          y: focus.y + (focus.destY - focus.y) * progress,
-        };
-      })()
-    : null;
-
-  const shown = focus ? livreurs.map((l) => (l.id === focus.id ? focusLive! : l)) : livreurs;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-3xl border border-border/50"
-      style={{
-        height,
-        background:
-          "radial-gradient(1200px 500px at 50% 100%, color-mix(in oklab, var(--primary) 10%, transparent), transparent), linear-gradient(180deg, color-mix(in oklab, var(--card) 88%, transparent), color-mix(in oklab, var(--secondary) 60%, transparent))",
-      }}
+      className="relative w-full overflow-hidden rounded-3xl border border-border/50 shadow-inner"
+      style={{ height }}
     >
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-        {/* subtle grid = blocks */}
-        <defs>
-          <pattern id="blocks" width="8" height="8" patternUnits="userSpaceOnUse">
-            <rect width="8" height="8" fill="none" />
-            <path d="M8 0H0v8" stroke="color-mix(in oklab, var(--primary) 12%, transparent)" strokeWidth="0.15" fill="none" />
-          </pattern>
-          <linearGradient id="road" x1="0" x2="1">
-            <stop offset="0" stopColor="color-mix(in oklab, var(--foreground) 8%, transparent)" />
-            <stop offset="1" stopColor="color-mix(in oklab, var(--foreground) 4%, transparent)" />
-          </linearGradient>
-        </defs>
-        <rect width="100" height="100" fill="url(#blocks)" />
-
-        {/* parks / squares */}
-        <circle cx="22" cy="28" r="6" fill="color-mix(in oklab, var(--chart-5) 18%, transparent)" />
-        <circle cx="78" cy="72" r="8" fill="color-mix(in oklab, var(--chart-5) 15%, transparent)" />
-        <rect x="60" y="18" width="14" height="10" rx="1.5" fill="color-mix(in oklab, var(--accent) 18%, transparent)" />
-
-        {/* main avenues */}
-        <path d="M0 50 L100 50" stroke="url(#road)" strokeWidth="2.2" />
-        <path d="M50 0 L50 100" stroke="url(#road)" strokeWidth="2.2" />
-        <path d="M0 20 L100 20" stroke="url(#road)" strokeWidth="1.2" />
-        <path d="M0 80 L100 80" stroke="url(#road)" strokeWidth="1.2" />
-        <path d="M20 0 L20 100" stroke="url(#road)" strokeWidth="1.2" />
-        <path d="M80 0 L80 100" stroke="url(#road)" strokeWidth="1.2" />
-        {/* diagonals */}
-        <path d="M0 0 L100 100" stroke="url(#road)" strokeWidth="0.6" opacity="0.6" />
-        <path d="M0 100 L100 0" stroke="url(#road)" strokeWidth="0.6" opacity="0.6" />
-
-        {/* route line for focus */}
-        {focus?.destX !== undefined && focus?.destY !== undefined && (
-          <>
-            <path
-              d={`M ${focus.x} ${focus.y} Q ${(focus.x + focus.destX) / 2 + 6} ${(focus.y + focus.destY) / 2 - 8}, ${focus.destX} ${focus.destY}`}
-              stroke="var(--primary)"
-              strokeWidth="0.8"
-              fill="none"
-              strokeDasharray="1.5 1.2"
-              opacity="0.9"
-            >
-              <animate attributeName="stroke-dashoffset" from="0" to="-8" dur="1.2s" repeatCount="indefinite" />
-            </path>
-            {/* destination marker */}
-            <circle cx={focus.destX} cy={focus.destY} r="1.2" fill="var(--accent)" />
-            <circle cx={focus.destX} cy={focus.destY} r="3" fill="none" stroke="var(--accent)" strokeWidth="0.4" opacity="0.6">
-              <animate attributeName="r" from="1.5" to="5" dur="2s" repeatCount="indefinite" />
-              <animate attributeName="opacity" from="0.8" to="0" dur="2s" repeatCount="indefinite" />
-            </circle>
-          </>
-        )}
-      </svg>
-
-      {/* Restaurant pin */}
-      <MapNode x={RESTAURANT.x} y={RESTAURANT.y}>
-        <div className="relative -translate-x-1/2 -translate-y-1/2">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-teal-glow flex items-center justify-center text-primary-foreground shadow-lg ring-4 ring-background">
-            <Home className="h-4 w-4" />
-          </div>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap text-[10px] font-semibold bg-background/90 backdrop-blur px-2 py-0.5 rounded-full border border-border">
-            Ladid Food
-          </div>
+      {mounted ? (
+        <LeafletMap
+          livreurs={livreurs}
+          focus={focus ?? null}
+          onSelect={onSelect}
+          selectedId={selectedId}
+        />
+      ) : (
+        <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground">
+          Chargement de la carte…
         </div>
-      </MapNode>
+      )}
 
-      {/* Livreurs */}
-      {shown.map((l) => {
-        const isFocus = focus?.id === l.id;
-        const isSelected = selectedId === l.id;
-        return (
-          <MapNode key={l.id} x={l.x} y={l.y}>
-            <button
-              type="button"
-              onClick={() => onSelect?.(l)}
-              className="group relative -translate-x-1/2 -translate-y-1/2 focus:outline-none"
-              style={{ cursor: onSelect ? "pointer" : "default" }}
-            >
-              {(l.statut === "En livraison" || isFocus) && (
-                <span
-                  className="absolute inset-0 rounded-full animate-ping"
-                  style={{ background: `color-mix(in oklab, ${statutFill[l.statut]} 60%, transparent)` }}
-                />
-              )}
-              <div
-                className={`relative h-8 w-8 rounded-full flex items-center justify-center text-white shadow-md ring-2 ring-background transition ${isSelected ? "scale-125" : "group-hover:scale-110"}`}
-                style={{ background: statutFill[l.statut] }}
-                title={l.nom}
-              >
-                <BikeIcon className="h-3.5 w-3.5" />
-              </div>
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap text-[10px] bg-background/90 backdrop-blur px-1.5 py-0.5 rounded-full border border-border opacity-0 group-hover:opacity-100 transition">
-                {l.nom.split(" ")[0]}
-              </div>
-            </button>
-          </MapNode>
-        );
-      })}
-
-      {/* Legend / overlays */}
-      <div className="absolute top-3 left-3 bg-background/80 backdrop-blur-md rounded-2xl border border-border/50 px-3 py-2 flex items-center gap-3 text-[11px]">
+      {/* Legend */}
+      <div className="pointer-events-none absolute top-3 left-3 z-[500] bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 px-3 py-2 flex items-center gap-3 text-[11px] shadow-md">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full" style={{ background: "var(--chart-5)" }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: statutColor["En ligne"] }} />
           En ligne
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full" style={{ background: "var(--primary)" }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: statutColor["En livraison"] }} />
           En livraison
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full" style={{ background: "var(--accent)" }} />
+          <span className="h-2 w-2 rounded-full" style={{ background: statutColor["En pause"] }} />
           En pause
         </span>
       </div>
 
-      <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-md rounded-2xl border border-border/50 px-3 py-2 flex items-center gap-2 text-[11px]">
+      <div className="pointer-events-none absolute top-3 right-3 z-[500] bg-background/90 backdrop-blur-md rounded-2xl border border-border/50 px-3 py-2 flex items-center gap-2 text-[11px] shadow-md">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
@@ -244,7 +149,7 @@ export function LiveCityMap({
 
       {/* Focus panel */}
       {focus && (
-        <div className="absolute bottom-3 left-3 right-3 md:right-auto md:w-96 bg-background/90 backdrop-blur-xl border border-border/60 rounded-2xl p-4 shadow-2xl">
+        <div className="absolute bottom-3 left-3 right-3 md:right-auto md:w-96 z-[500] bg-background/95 backdrop-blur-xl border border-border/60 rounded-2xl p-4 shadow-2xl">
           <div className="flex items-start gap-3">
             <div className="h-11 w-11 rounded-full bg-gradient-to-br from-primary to-teal-glow flex items-center justify-center text-primary-foreground font-display">
               {focus.nom.split(" ").map((n) => n[0]).join("").slice(0, 2)}
@@ -265,6 +170,11 @@ export function LiveCityMap({
                   <>{focus.vehicule ?? "Scooter"} · Zone Kénitra</>
                 )}
               </div>
+              {focus.adresse && (
+                <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+                  <Navigation2 className="h-3 w-3" /> {focus.adresse}
+                </div>
+              )}
             </div>
           </div>
 
@@ -299,13 +209,170 @@ export function LiveCityMap({
   );
 }
 
-function MapNode({ x, y, children }: { x: number; y: number; children: React.ReactNode }) {
+function LeafletMap({
+  livreurs,
+  focus,
+  onSelect,
+  selectedId,
+}: {
+  livreurs: MapLivreur[];
+  focus: MapLivreur | null;
+  onSelect?: (l: MapLivreur) => void;
+  selectedId?: string;
+}) {
+  // Import react-leaflet only on client to avoid SSR "window is not defined"
+  const RL = require("react-leaflet") as typeof import("react-leaflet");
+  const L = require("leaflet") as typeof import("leaflet");
+  const { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } = RL;
+
+  const restaurantPos = CENTER;
+
+  const bikeIcon = (color: string, pulse: boolean, selected: boolean) =>
+    L.divIcon({
+      className: "",
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      html: `
+        <div style="position:relative;width:36px;height:36px;">
+          ${pulse ? `<span style="position:absolute;inset:0;border-radius:9999px;background:${color};opacity:.35;animation:ldfPing 1.6s cubic-bezier(0,0,.2,1) infinite;"></span>` : ""}
+          <div style="position:absolute;inset:4px;border-radius:9999px;background:${color};box-shadow:0 4px 14px ${color}55, 0 0 0 3px #fff;display:flex;align-items:center;justify-content:center;color:#fff;transform:scale(${selected ? 1.15 : 1});transition:transform .2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>
+          </div>
+        </div>`,
+    });
+
+  const restaurantIcon = L.divIcon({
+    className: "",
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+    html: `
+      <div style="position:relative;width:44px;height:44px;">
+        <div style="position:absolute;inset:0;border-radius:9999px;background:linear-gradient(135deg,#0d9488,#14b8a6);box-shadow:0 6px 18px rgba(13,148,136,.45),0 0 0 4px #fff;display:flex;align-items:center;justify-content:center;color:#fff;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+      </div>`,
+  });
+
+  const destIcon = L.divIcon({
+    className: "",
+    iconSize: [28, 36],
+    iconAnchor: [14, 34],
+    html: `<div style="filter:drop-shadow(0 3px 6px rgba(0,0,0,.35));"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 8.5 12 20 12 20s12-11.5 12-20C24 5.4 18.6 0 12 0z" fill="#f59e0b"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></svg></div>`,
+  });
+
+  const focusLine: [number, number][] | null = useMemo(() => {
+    if (!focus || focus.destX === undefined || focus.destY === undefined) return null;
+    const a = toLatLng(focus.x, focus.y);
+    const b = toLatLng(focus.destX, focus.destY);
+    // curve via midpoint offset
+    const mid: [number, number] = [(a[0] + b[0]) / 2 + 0.004, (a[1] + b[1]) / 2 + 0.004];
+    return [a, mid, b];
+  }, [focus]);
+
+  function Recenter() {
+    const map = useMap();
+    useEffect(() => {
+      if (focus) {
+        const target = toLatLng(focus.x, focus.y);
+        map.flyTo(target, 14, { duration: 0.8 });
+      } else if (livreurs.length) {
+        const pts = livreurs.map((l) => toLatLng(l.x, l.y));
+        const bounds = L.latLngBounds([restaurantPos, ...pts]);
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+      }
+    }, [focus?.id, livreurs.length, map]);
+    return null;
+  }
+
   return (
-    <div className="absolute" style={{ left: `${x}%`, top: `${y}%` }}>
-      {children}
-    </div>
+    <>
+      <style>{`
+        @keyframes ldfPing { 75%,100% { transform:scale(2); opacity:0; } }
+        .leaflet-container { background:#e8f1ef; font-family:inherit; }
+        .leaflet-popup-content-wrapper { border-radius:14px; box-shadow:0 12px 32px rgba(0,0,0,.18); }
+        .leaflet-popup-content { margin:12px 14px; font-size:12px; }
+        .leaflet-control-attribution { font-size:9px !important; opacity:.7; }
+      `}</style>
+      <MapContainer
+        center={restaurantPos}
+        zoom={13}
+        scrollWheelZoom
+        style={{ height: "100%", width: "100%" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{y}/{x}{r}.png"
+        />
+
+        <Marker position={restaurantPos} icon={restaurantIcon}>
+          <Popup>
+            <div>
+              <div style={{ fontWeight: 700, marginBottom: 2 }}>Ladid Food — Kénitra</div>
+              <div style={{ color: "#64748b" }}>Restaurant · Point de départ</div>
+            </div>
+          </Popup>
+        </Marker>
+
+        {livreurs.map((l) => {
+          const pos = toLatLng(l.x, l.y);
+          const color = statutColor[l.statut];
+          const pulse = l.statut === "En livraison" || focus?.id === l.id;
+          const selected = selectedId === l.id || focus?.id === l.id;
+          return (
+            <Marker
+              key={l.id}
+              position={pos}
+              icon={bikeIcon(color, pulse, selected)}
+              eventHandlers={{
+                click: () => onSelect?.(l),
+              }}
+            >
+              <Popup>
+                <div style={{ minWidth: 200 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>{l.nom}</div>
+                  <div style={{ color: color, fontWeight: 600, fontSize: 11, marginTop: 2 }}>
+                    ● {l.statut}
+                  </div>
+                  <div style={{ marginTop: 6, color: "#475569" }}>
+                    {l.vehicule ?? "Scooter"} {l.telephone ? `· ${l.telephone}` : ""}
+                  </div>
+                  {l.commande && (
+                    <div style={{ marginTop: 6, padding: "6px 8px", background: "#f1f5f9", borderRadius: 8 }}>
+                      <div style={{ fontFamily: "monospace", color: "#0d9488", fontWeight: 700 }}>{l.commande}</div>
+                      <div style={{ color: "#334155" }}>{l.client}</div>
+                      {l.adresse && <div style={{ color: "#64748b", fontSize: 11, marginTop: 2 }}>{l.adresse}</div>}
+                      <div style={{ display: "flex", gap: 8, marginTop: 6, fontSize: 11, color: "#0f172a" }}>
+                        <span>⏱ {l.eta} min</span>
+                        <span>📍 {l.distance} km</span>
+                        <span>⚡ 42 km/h</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
+        {focus && focusLine && (
+          <>
+            <Polyline
+              positions={focusLine}
+              pathOptions={{ color: "#0d9488", weight: 4, opacity: 0.85, dashArray: "8 8" }}
+            />
+            <Marker position={toLatLng(focus.destX!, focus.destY!)} icon={destIcon}>
+              <Popup>
+                <div>
+                  <div style={{ fontWeight: 700 }}>Destination</div>
+                  <div style={{ color: "#64748b" }}>{focus.adresse ?? "Client"}</div>
+                </div>
+              </Popup>
+            </Marker>
+          </>
+        )}
+
+        <Recenter />
+      </MapContainer>
+    </>
   );
 }
-
-// silence unused import warning
-export const _mapUnused = { MapPin, Navigation2 };
