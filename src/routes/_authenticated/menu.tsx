@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, Info, Clock, Flame, ShieldCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +27,7 @@ function Page() {
   const [cat, setCat] = useState<string>("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Plat | null>(null);
+  const [details, setDetails] = useState<Plat | null>(null);
 
   const filtered = data.filter((p) => (cat === "all" || p.categorie === cat) && p.nom.toLowerCase().includes(q.toLowerCase()));
 
@@ -97,6 +99,7 @@ function Page() {
             <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3">
               <span>🔥 {p.ventes} ventes ce mois</span>
               <div className="flex gap-1">
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setDetails(p)}><Info className="h-3.5 w-3.5" /></Button>
                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}><Edit className="h-3.5 w-3.5" /></Button>
                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggle(p)}>{p.disponible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>
                 <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p)}><Trash2 className="h-3.5 w-3.5" /></Button>
@@ -109,6 +112,48 @@ function Page() {
       <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
         <PlatForm key={editing?.id ?? "new"} plat={editing} onSave={save} onCancel={() => { setOpen(false); setEditing(null); }} />
       </Dialog>
+
+      <Sheet open={!!details} onOpenChange={(o) => !o && setDetails(null)}>
+        {details && (
+          <SheetContent className="glass w-full sm:max-w-lg overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="font-display text-2xl">{details.nom}</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 space-y-5">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="border-primary/30 text-primary">{details.categorie}</Badge>
+                <Badge className={details.disponible ? "bg-chart-5/20 text-chart-5 border border-chart-5/30" : "bg-destructive/20 text-destructive border border-destructive/30"}>{details.disponible ? "Disponible" : "Indisponible"}</Badge>
+                {details.halal && <Badge className="bg-primary/15 text-primary border border-primary/30">Halal</Badge>}
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 rounded-xl bg-secondary/40">
+                  <div className="text-[10px] uppercase text-muted-foreground">Prix</div>
+                  <div className="font-display text-lg text-primary">{formatMAD(details.prix)}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-secondary/40">
+                  <div className="text-[10px] uppercase text-muted-foreground">Préparation</div>
+                  <div className="font-semibold flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-primary" />{details.tempsPreparation} min</div>
+                </div>
+                <div className="p-3 rounded-xl bg-secondary/40">
+                  <div className="text-[10px] uppercase text-muted-foreground">Ventes</div>
+                  <div className="font-semibold flex items-center gap-1"><Flame className="h-3.5 w-3.5 text-primary" />{details.ventes}</div>
+                </div>
+              </div>
+              <div className="p-4 rounded-xl bg-secondary/40 text-sm leading-relaxed">{details.description}</div>
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-2">Allergènes</div>
+                <div className="flex flex-wrap gap-2">
+                  {details.allergenes.length ? details.allergenes.map((a) => <Badge key={a} variant="outline">{a}</Badge>) : <span className="text-sm text-muted-foreground flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" />Aucun allergène déclaré</span>}
+                </div>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button className="flex-1 rounded-full bg-primary text-primary-foreground" onClick={() => { setEditing(details); setOpen(true); setDetails(null); }}><Edit className="h-4 w-4 mr-1" />Modifier</Button>
+                <Button variant="outline" className="rounded-full" onClick={() => { toggle(details); setDetails((p) => p ? { ...p, disponible: !p.disponible } : p); }}>{details.disponible ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{details.disponible ? "Masquer" : "Publier"}</Button>
+              </div>
+            </div>
+          </SheetContent>
+        )}
+      </Sheet>
     </div>
   );
 }

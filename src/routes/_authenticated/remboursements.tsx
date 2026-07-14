@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { Wallet, CheckCircle2, XCircle, Plus, Search } from "lucide-react";
+import { Wallet, CheckCircle2, XCircle, Plus, Search, Eye, MoreHorizontal, CreditCard, UserCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { remboursements as seed, formatMAD, formatDate, type Remboursement } from "@/lib/mock/data";
 import { toast } from "sonner";
 import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
@@ -31,6 +33,7 @@ function Page() {
   const [q, setQ] = useState("");
   const [statutF, setStatutF] = useState("all");
   const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState<Remboursement | null>(null);
   const [form, setForm] = useState<NewR>(emptyNew);
 
   const filtered = data.filter((r) => {
@@ -41,6 +44,7 @@ function Page() {
 
   function act(r: Remboursement, s: Remboursement["statut"]) {
     setData((d) => d.map((x) => x.id === r.id ? { ...x, statut: s, traiteBy: "Yassine Amrani" } : x));
+    setCurrent((cur) => cur?.id === r.id ? { ...cur, statut: s, traiteBy: "Yassine Amrani" } : cur);
     toast.success(s === "Approuvé" ? "Remboursement approuvé" : s === "Refusé" ? "Refusé" : "Remboursement effectué");
   }
 
@@ -112,18 +116,18 @@ function Page() {
                 <TableCell><Badge className={statutColor[r.statut] + " border"}>{r.statut}</Badge></TableCell>
                 <TableCell className="text-xs text-muted-foreground">{r.traiteBy ?? "—"}</TableCell>
                 <TableCell className="text-right">
-                  {r.statut === "En attente" && (
-                    <div className="flex gap-1 justify-end">
-                      <Button size="sm" variant="outline" className="rounded-full text-chart-5 border-chart-5/30 hover:bg-chart-5/10" onClick={() => act(r, "Approuvé")}><CheckCircle2 className="h-3 w-3 mr-1" />Approuver</Button>
-                      <Button size="sm" variant="outline" className="rounded-full text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => act(r, "Refusé")}><XCircle className="h-3 w-3 mr-1" />Refuser</Button>
-                    </div>
-                  )}
-                  {r.statut === "Approuvé" && (
-                    <Button size="sm" className="rounded-full bg-primary text-primary-foreground" onClick={() => act(r, "Remboursé")}>Rembourser</Button>
-                  )}
-                  {(r.statut === "Refusé" || r.statut === "Remboursé") && (
-                    <span className="text-xs text-muted-foreground">Clôturé</span>
-                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="ghost" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setCurrent(r)}><Eye className="h-4 w-4 mr-2" />Voir détails</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem disabled={r.statut !== "En attente"} onClick={() => act(r, "Approuvé")}><CheckCircle2 className="h-4 w-4 mr-2" />Approuver</DropdownMenuItem>
+                      <DropdownMenuItem disabled={r.statut !== "Approuvé"} onClick={() => act(r, "Remboursé")}><CreditCard className="h-4 w-4 mr-2" />Rembourser</DropdownMenuItem>
+                      <DropdownMenuItem disabled={r.statut === "Remboursé"} className="text-destructive" onClick={() => act(r, "Refusé")}><XCircle className="h-4 w-4 mr-2" />Refuser</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
@@ -165,6 +169,50 @@ function Page() {
           </FieldGroup>
         </FormShell>
       </Dialog>
+
+      <Sheet open={!!current} onOpenChange={(o) => !o && setCurrent(null)}>
+        {current && (
+          <SheetContent className="glass w-full sm:max-w-lg overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="font-display text-2xl">Remboursement {current.commande}</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <Badge className={statutColor[current.statut] + " border"}>{current.statut}</Badge>
+                <div className="font-display text-2xl text-primary">{formatMAD(current.montant)}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-secondary/40">
+                  <div className="text-[10px] uppercase text-muted-foreground">Client</div>
+                  <div className="text-sm font-medium">{current.client}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-secondary/40">
+                  <div className="text-[10px] uppercase text-muted-foreground">Commande</div>
+                  <div className="font-mono text-sm text-primary">{current.commande}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-secondary/40">
+                  <div className="text-[10px] uppercase text-muted-foreground">Date demande</div>
+                  <div className="text-sm font-medium">{formatDate(current.date)}</div>
+                </div>
+                <div className="p-3 rounded-xl bg-secondary/40">
+                  <div className="text-[10px] uppercase text-muted-foreground">Traitée par</div>
+                  <div className="text-sm font-medium">{current.traiteBy ?? "Non traitée"}</div>
+                </div>
+              </div>
+              <div className="p-4 rounded-xl bg-secondary/40 text-sm">
+                <div className="text-[10px] uppercase text-muted-foreground mb-1">Motif</div>
+                {current.motif}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" className="rounded-full" disabled={current.statut !== "En attente"} onClick={() => act(current, "Approuvé")}><CheckCircle2 className="h-4 w-4 mr-1" />Approuver</Button>
+                <Button className="rounded-full bg-primary text-primary-foreground" disabled={current.statut !== "Approuvé"} onClick={() => act(current, "Remboursé")}><CreditCard className="h-4 w-4 mr-1" />Rembourser</Button>
+                <Button variant="outline" className="rounded-full text-destructive border-destructive/30 hover:bg-destructive/10" disabled={current.statut === "Remboursé"} onClick={() => act(current, "Refusé")}><XCircle className="h-4 w-4 mr-1" />Refuser</Button>
+                <Button variant="ghost" className="rounded-full" onClick={() => { setCurrent({ ...current, traiteBy: "Yassine Amrani" }); setData((d) => d.map((x) => x.id === current.id ? { ...x, traiteBy: "Yassine Amrani" } : x)); toast.success("Dossier assigné à votre compte"); }}><UserCheck className="h-4 w-4 mr-1" />M'assigner</Button>
+              </div>
+            </div>
+          </SheetContent>
+        )}
+      </Sheet>
     </div>
   );
 }
