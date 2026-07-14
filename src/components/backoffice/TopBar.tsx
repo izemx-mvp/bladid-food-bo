@@ -116,15 +116,15 @@ export function TopBar() {
         <DropdownMenuContent align="end" className="w-80">
           <DropdownMenuLabel>Notifications</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex-col items-start py-3">
+          <DropdownMenuItem className="flex-col items-start py-3" onClick={() => navigate({ to: "/reclamations" })}>
             <div className="text-sm font-medium">Nouvelle réclamation urgente</div>
             <div className="text-xs text-muted-foreground">Commande #LDF-2618 · il y a 5 min</div>
           </DropdownMenuItem>
-          <DropdownMenuItem className="flex-col items-start py-3">
+          <DropdownMenuItem className="flex-col items-start py-3" onClick={() => navigate({ to: "/livreurs" })}>
             <div className="text-sm font-medium">Livreur Youssef · en ligne</div>
             <div className="text-xs text-muted-foreground">Zone Kénitra Centre · il y a 12 min</div>
           </DropdownMenuItem>
-          <DropdownMenuItem className="flex-col items-start py-3">
+          <DropdownMenuItem className="flex-col items-start py-3" onClick={() => navigate({ to: "/remboursements" })}>
             <div className="text-sm font-medium">3 remboursements en attente</div>
             <div className="text-xs text-muted-foreground">À traiter aujourd'hui</div>
           </DropdownMenuItem>
