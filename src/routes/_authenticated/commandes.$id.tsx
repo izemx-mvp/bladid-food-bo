@@ -43,7 +43,7 @@ function Detail() {
         actions={
           <>
             <Button variant="outline" className="rounded-full" onClick={() => toast.success("Ticket imprimé")}><Printer className="h-4 w-4 mr-1" />Imprimer</Button>
-            <Button className="rounded-full bg-destructive text-destructive-foreground" onClick={() => toast.warning("Commande annulée")}><XCircle className="h-4 w-4 mr-1" />Annuler</Button>
+            <Button className="rounded-full bg-destructive text-destructive-foreground" onClick={() => { setC((p) => p ? { ...p, statut: "Annulée" } : p); toast.warning("Commande annulée"); }}><XCircle className="h-4 w-4 mr-1" />Annuler</Button>
           </>
         }
       />
