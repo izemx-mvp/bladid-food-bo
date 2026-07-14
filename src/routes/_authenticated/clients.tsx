@@ -1,15 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { Users, Search, Plus, Eye, MoreHorizontal, Ban, Award } from "lucide-react";
+import { Users, Search, Plus, Eye, MoreHorizontal, Ban, Award, Edit, Trash2, User as UserIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { clients as seed, formatMAD, formatDate, type Client } from "@/lib/mock/data";
 import { toast } from "sonner";
+import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
 
 export const Route = createFileRoute("/_authenticated/clients")({ component: Page });
 
@@ -20,15 +24,45 @@ const niveauColor: Record<Client["niveau"], string> = {
   Platine: "bg-primary/20 text-primary border-primary/30",
 };
 
+const empty: Client = { id: "", nom: "", email: "", telephone: "", adresses: [""], points: 0, niveau: "Bronze", commandes: 0, totalDepense: 0, inscription: new Date().toISOString(), actif: true };
+
 function Page() {
   const [data, setData] = useState(seed);
   const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Client | null>(null);
+  const [form, setForm] = useState<Client>(empty);
 
   const filtered = data.filter((c) => c.nom.toLowerCase().includes(q.toLowerCase()) || c.email.toLowerCase().includes(q.toLowerCase()));
+
+  function openAdd() { setEditing(null); setForm(empty); setOpen(true); }
+  function openEdit(c: Client) { setEditing(c); setForm(c); setOpen(true); }
+
+  function save() {
+    if (!form.nom || !form.email) { toast.error("Nom et email obligatoires"); return; }
+    if (editing) {
+      setData((d) => d.map((x) => x.id === editing.id ? form : x));
+      toast.success("Fiche client mise à jour");
+    } else {
+      setData((d) => [{ ...form, id: `c${Date.now()}` }, ...d]);
+      toast.success("Nouveau client ajouté");
+    }
+    setOpen(false);
+  }
 
   function toggle(c: Client) {
     setData((d) => d.map((x) => x.id === c.id ? { ...x, actif: !x.actif } : x));
     toast.success(`Client ${c.actif ? "bloqué" : "débloqué"}`);
+  }
+
+  function remove(c: Client) {
+    setData((d) => d.filter((x) => x.id !== c.id));
+    toast.success("Client supprimé");
+  }
+
+  function addPoints(c: Client) {
+    setData((d) => d.map((x) => x.id === c.id ? { ...x, points: x.points + 100 } : x));
+    toast.success(`+100 points ajoutés à ${c.nom}`);
   }
 
   return (
@@ -37,13 +71,13 @@ function Page() {
         icon={Users}
         title="Clients"
         description={`${data.length} clients enregistrés · ${data.filter((c) => c.niveau === "Platine").length} Platine`}
-        actions={<Button className="rounded-full bg-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" />Ajouter</Button>}
+        actions={<Button className="rounded-full bg-primary text-primary-foreground" onClick={openAdd}><Plus className="h-4 w-4 mr-1" />Ajouter un client</Button>}
       />
 
       <Card className="glass p-4 mb-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher un client…" className="pl-9 bg-secondary/60 border-0 max-w-md" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input placeholder="Rechercher un client par nom ou email…" className="pl-9 bg-secondary/60 border-0 max-w-md" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
       </Card>
 
@@ -88,8 +122,10 @@ function Page() {
                     <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild><Link to="/clients/$id" params={{ id: c.id }}><Eye className="h-4 w-4 mr-2" />Voir la fiche</Link></DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => toast.success("+100 points ajoutés")}><Award className="h-4 w-4 mr-2" />+100 points</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => toggle(c)}><Ban className="h-4 w-4 mr-2" />{c.actif ? "Bloquer" : "Débloquer"}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openEdit(c)}><Edit className="h-4 w-4 mr-2" />Modifier</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => addPoints(c)}><Award className="h-4 w-4 mr-2" />+100 points</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toggle(c)}><Ban className="h-4 w-4 mr-2" />{c.actif ? "Bloquer" : "Débloquer"}</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => remove(c)}><Trash2 className="h-4 w-4 mr-2" />Supprimer</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -98,6 +134,50 @@ function Page() {
           </TableBody>
         </Table>
       </Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <FormShell
+          title={editing ? "Modifier le client" : "Nouveau client"}
+          subtitle={editing ? "Mettez à jour les informations de fidélité et de contact." : "Créez une fiche client pour l'application mobile Ladid Food."}
+          icon={<UserIcon className="h-5 w-5" />}
+          onSubmit={save}
+          onCancel={() => setOpen(false)}
+          submitLabel={editing ? "Enregistrer les modifications" : "Créer le client"}
+        >
+          <FieldGroup title="Identité">
+            <Row>
+              <div><Label>Nom complet</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Fatima Zahra Idrissi" /></div>
+              <div>
+                <Label>Niveau de fidélité</Label>
+                <Select value={form.niveau} onValueChange={(v) => setForm({ ...form, niveau: v as Client["niveau"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(["Bronze","Argent","Or","Platine"] as const).map((n) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </Row>
+          </FieldGroup>
+
+          <FieldGroup title="Coordonnées">
+            <Row>
+              <div><Label>Adresse email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="client@example.com" /></div>
+              <div><Label>Téléphone</Label><Input value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} placeholder="06 12 34 56 78" /></div>
+            </Row>
+            <div>
+              <Label>Adresse de livraison</Label>
+              <Input value={form.adresses[0] ?? ""} onChange={(e) => setForm({ ...form, adresses: [e.target.value] })} placeholder="Rue Hassan II, Kénitra" />
+            </div>
+          </FieldGroup>
+
+          <FieldGroup title="Fidélité & historique">
+            <Row>
+              <div><Label>Points de fidélité</Label><Input type="number" value={form.points} onChange={(e) => setForm({ ...form, points: +e.target.value })} /></div>
+              <div><Label>Total dépensé (MAD)</Label><Input type="number" value={form.totalDepense} onChange={(e) => setForm({ ...form, totalDepense: +e.target.value })} /></div>
+            </Row>
+          </FieldGroup>
+        </FormShell>
+      </Dialog>
     </div>
   );
 }

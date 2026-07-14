@@ -1,13 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { Bike, Star, MapPin, Phone, Eye, Power } from "lucide-react";
+import { Bike, Star, MapPin, Phone, Eye, Power, Plus, Edit, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { livreurs as seed, formatMAD, type Livreur } from "@/lib/mock/data";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
 
 export const Route = createFileRoute("/_authenticated/livreurs")({ component: Page });
 
@@ -18,15 +23,40 @@ const statutColor: Record<Livreur["statut"], string> = {
   "Hors ligne": "bg-muted text-muted-foreground border-border",
 };
 
+const empty: Livreur = { id: "", nom: "", telephone: "", vehicule: "Scooter", immatriculation: "", statut: "Hors ligne", note: 5, livraisonsAujourdhui: 0, gainsJour: 0, gainsMois: 0, zone: "Kénitra Centre", actif: true };
+
 function Page() {
   const [data, setData] = useState(seed);
   const [filter, setFilter] = useState("all");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Livreur | null>(null);
+  const [form, setForm] = useState<Livreur>(empty);
 
   const filtered = filter === "all" ? data : data.filter((l) => l.statut === filter);
+
+  function openAdd() { setEditing(null); setForm(empty); setOpen(true); }
+  function openEdit(l: Livreur) { setEditing(l); setForm(l); setOpen(true); }
+
+  function save() {
+    if (!form.nom || !form.telephone) { toast.error("Nom et téléphone obligatoires"); return; }
+    if (editing) {
+      setData((d) => d.map((x) => x.id === editing.id ? { ...form, id: editing.id } : x));
+      toast.success("Livreur mis à jour");
+    } else {
+      setData((d) => [{ ...form, id: `lv${Date.now()}` }, ...d]);
+      toast.success("Nouveau livreur ajouté à l'équipe");
+    }
+    setOpen(false);
+  }
 
   function toggle(l: Livreur) {
     setData((d) => d.map((x) => x.id === l.id ? { ...x, actif: !x.actif } : x));
     toast.success(`${l.nom} ${!l.actif ? "réactivé" : "désactivé"}`);
+  }
+
+  function remove(l: Livreur) {
+    setData((d) => d.filter((x) => x.id !== l.id));
+    toast.success(`${l.nom} retiré de l'équipe`);
   }
 
   return (
@@ -35,6 +65,7 @@ function Page() {
         icon={Bike}
         title="Livreurs"
         description={`${data.length} livreurs · ${data.filter((l) => l.statut === "En ligne").length} en ligne · ${data.filter((l) => l.statut === "En livraison").length} en course`}
+        actions={<Button className="rounded-full bg-primary text-primary-foreground" onClick={openAdd}><Plus className="h-4 w-4 mr-1" />Nouveau livreur</Button>}
       />
 
       <Tabs value={filter} onValueChange={setFilter} className="mb-4">
@@ -87,13 +118,71 @@ function Page() {
               </div>
             </div>
 
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-1 mt-3">
               <Button asChild size="sm" variant="outline" className="flex-1 rounded-full"><Link to="/livreurs/$id" params={{ id: l.id }}><Eye className="h-3 w-3 mr-1" />Voir</Link></Button>
-              <Button size="sm" variant="ghost" className="rounded-full" onClick={() => toggle(l)}><Power className="h-3 w-3" /></Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(l)}><Edit className="h-3.5 w-3.5" /></Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggle(l)}><Power className="h-3.5 w-3.5" /></Button>
+              <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(l)}><Trash2 className="h-3.5 w-3.5" /></Button>
             </div>
           </Card>
         ))}
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <FormShell
+          title={editing ? `Modifier ${editing.nom}` : "Nouveau livreur"}
+          subtitle="Attribuez un véhicule et une zone de livraison au coursier."
+          icon={<Bike className="h-5 w-5" />}
+          onSubmit={save}
+          onCancel={() => setOpen(false)}
+          submitLabel={editing ? "Enregistrer" : "Ajouter le livreur"}
+        >
+          <FieldGroup title="Identité">
+            <Row>
+              <div><Label>Nom complet</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Mehdi Tazi" /></div>
+              <div><Label>Téléphone</Label><Input value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} placeholder="06 12 34 56 78" /></div>
+            </Row>
+          </FieldGroup>
+
+          <FieldGroup title="Véhicule">
+            <Row>
+              <div>
+                <Label>Type de véhicule</Label>
+                <Select value={form.vehicule} onValueChange={(v) => setForm({ ...form, vehicule: v as Livreur["vehicule"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(["Scooter","Moto","Vélo","Voiture"] as const).map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Immatriculation</Label><Input value={form.immatriculation} onChange={(e) => setForm({ ...form, immatriculation: e.target.value })} placeholder="12345 - A - 1" /></div>
+            </Row>
+          </FieldGroup>
+
+          <FieldGroup title="Zone d'activité">
+            <Row>
+              <div>
+                <Label>Zone principale</Label>
+                <Select value={form.zone} onValueChange={(v) => setForm({ ...form, zone: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["Kénitra Centre","Mimosas","Val Fleuri","Bir Rami","Ouled Oujih","Maamoura","Fouarat"].map((z) => <SelectItem key={z} value={z}>{z}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Statut initial</Label>
+                <Select value={form.statut} onValueChange={(v) => setForm({ ...form, statut: v as Livreur["statut"] })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(["En ligne","En pause","Hors ligne"] as const).map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </Row>
+          </FieldGroup>
+        </FormShell>
+      </Dialog>
     </div>
   );
 }
