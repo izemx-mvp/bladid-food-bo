@@ -29,7 +29,6 @@ const labels: Record<string, string> = {
   avis: "Avis clients",
   notifications: "Notifications",
   rapports: "Rapports",
-  parametres: "Paramètres",
 };
 
 export function TopBar() {
