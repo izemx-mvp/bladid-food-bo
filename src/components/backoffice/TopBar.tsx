@@ -1,6 +1,6 @@
 import { useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Bell, LogOut, Search, Settings2, User } from "lucide-react";
+import { Bell, LogOut, Moon, Search, Settings2, Sun, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useTheme } from "@/lib/theme";
 
 const labels: Record<string, string> = {
   dashboard: "Tableau de bord",
@@ -35,6 +36,7 @@ export function TopBar() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const session = getSession();
+  const { theme, toggle } = useTheme();
   const segments = pathname.split("/").filter(Boolean);
 
   function logout() {
@@ -73,6 +75,10 @@ export function TopBar() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Rechercher commande, client…  ⌘K" className="pl-9 w-72 h-9 rounded-full bg-secondary border-0" />
       </div>
+
+      <Button size="icon" variant="ghost" onClick={toggle} className="rounded-full" aria-label="Basculer le thème">
+        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

@@ -66,19 +66,12 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-3 px-2 py-3">
-          <div className="h-10 w-10 rounded-xl bg-cream flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-            <img src={LOGO_URL} alt="Ladid" className="h-8 w-8" onError={(e) => {
-              const t = e.currentTarget as HTMLImageElement;
-              t.style.display = "none";
-              t.parentElement!.innerHTML = '<span class="font-display text-primary-foreground text-xl">L</span>';
-              (t.parentElement as HTMLElement).style.background = "var(--primary)";
-            }} />
-          </div>
-          <div className="group-data-[collapsible=icon]:hidden">
-            <div className="font-display text-lg leading-none text-sidebar-foreground">Ladid Food</div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Backoffice</div>
-          </div>
+        <div className="flex items-center justify-center px-2 py-4">
+          <img
+            src={LOGO_URL}
+            alt="Ladid Food"
+            className="h-12 w-auto group-data-[collapsible=icon]:h-8"
+          />
         </div>
       </SidebarHeader>
 

@@ -46,12 +46,9 @@ function LoginPage() {
 
       <div className="w-full max-w-md relative">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <img src={LOGO_URL} alt="Ladid Food" className="h-14 w-14 rounded-full bg-cream p-1.5" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-            <div className="text-left">
-              <div className="font-display text-3xl text-primary">Ladid Food</div>
-              <div className="text-xs text-muted-foreground tracking-widest uppercase">Espace d'administration</div>
-            </div>
+          <div className="inline-flex flex-col items-center gap-3 mb-2">
+            <img src={LOGO_URL} alt="Ladid Food" className="h-20 w-auto" />
+            <div className="text-xs text-muted-foreground tracking-[0.3em] uppercase">Espace d'administration</div>
           </div>
         </div>
 
