@@ -120,7 +120,6 @@ export function TopBar() {
           <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem><User className="h-4 w-4 mr-2" />Profil</DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/parametres"><Settings2 className="h-4 w-4 mr-2" /> Paramètres</Link></DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="text-destructive">
             <LogOut className="h-4 w-4 mr-2" />Se déconnecter
