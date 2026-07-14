@@ -30,20 +30,21 @@ function Detail() {
   const [c, setC] = useState(initial);
   const [assignOpen, setAssignOpen] = useState(false);
   if (!c) return <div className="p-8">Introuvable</div>;
+  const commande = c;
 
-  const currentStep = timeline.findIndex((t) => t.key === c.statut);
+  const currentStep = timeline.findIndex((t) => t.key === commande.statut);
 
   function printTicket() {
-    const lines = c.items.map((it) => `${it.qte} × ${it.plat} — ${formatMAD(it.qte * it.prix)}`).join("\n");
-    const ticket = `LADID FOOD\n${c.numero}\n${formatDate(c.date)}\n\nClient: ${c.client}\nTel: ${c.telephone}\nAdresse: ${c.adresse}\n\n${lines}\n\nTOTAL: ${formatMAD(c.total)}\nPaiement: ${c.paiement}`;
+    const lines = commande.items.map((it) => `${it.qte} × ${it.plat} — ${formatMAD(it.qte * it.prix)}`).join("\n");
+    const ticket = `LADID FOOD\n${commande.numero}\n${formatDate(commande.date)}\n\nClient: ${commande.client}\nTel: ${commande.telephone}\nAdresse: ${commande.adresse}\n\n${lines}\n\nTOTAL: ${formatMAD(commande.total)}\nPaiement: ${commande.paiement}`;
     const blob = new Blob([ticket], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${c.numero.replace("#", "")}-ticket.txt`;
+    a.download = `${commande.numero.replace("#", "")}-ticket.txt`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Ticket téléchargé", { description: c.numero });
+    toast.success("Ticket téléchargé", { description: commande.numero });
   }
 
   return (
