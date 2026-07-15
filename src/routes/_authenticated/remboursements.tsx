@@ -43,8 +43,8 @@ function Page() {
   });
 
   function act(r: Remboursement, s: Remboursement["statut"]) {
-    setData((d) => d.map((x) => x.id === r.id ? { ...x, statut: s, traiteBy: "Yassine Amrani" } : x));
-    setCurrent((cur) => cur?.id === r.id ? { ...cur, statut: s, traiteBy: "Yassine Amrani" } : cur);
+    setData((d) => d.map((x) => x.id === r.id ? { ...x, statut: s, traiteBy: "Yanis" } : x));
+    setCurrent((cur) => cur?.id === r.id ? { ...cur, statut: s, traiteBy: "Yanis" } : cur);
     toast.success(s === "Approuvé" ? "Remboursement approuvé" : s === "Refusé" ? "Refusé" : "Remboursement effectué");
   }
 
@@ -207,7 +207,7 @@ function Page() {
                 <Button variant="outline" className="rounded-full" disabled={current.statut !== "En attente"} onClick={() => act(current, "Approuvé")}><CheckCircle2 className="h-4 w-4 mr-1" />Approuver</Button>
                 <Button className="rounded-full bg-primary text-primary-foreground" disabled={current.statut !== "Approuvé"} onClick={() => act(current, "Remboursé")}><CreditCard className="h-4 w-4 mr-1" />Rembourser</Button>
                 <Button variant="outline" className="rounded-full text-destructive border-destructive/30 hover:bg-destructive/10" disabled={current.statut === "Remboursé"} onClick={() => act(current, "Refusé")}><XCircle className="h-4 w-4 mr-1" />Refuser</Button>
-                <Button variant="ghost" className="rounded-full" onClick={() => { setCurrent({ ...current, traiteBy: "Yassine Amrani" }); setData((d) => d.map((x) => x.id === current.id ? { ...x, traiteBy: "Yassine Amrani" } : x)); toast.success("Dossier assigné à votre compte"); }}><UserCheck className="h-4 w-4 mr-1" />M'assigner</Button>
+                <Button variant="ghost" className="rounded-full" onClick={() => { setCurrent({ ...current, traiteBy: "Yanis" }); setData((d) => d.map((x) => x.id === current.id ? { ...x, traiteBy: "Yanis" } : x)); toast.success("Dossier assigné à votre compte"); }}><UserCheck className="h-4 w-4 mr-1" />M'assigner</Button>
               </div>
             </div>
           </SheetContent>

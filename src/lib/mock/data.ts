@@ -249,7 +249,7 @@ export const remboursements: Remboursement[] = Array.from({ length: 10 }, (_, i)
   motif: pick(["Commande non reçue", "Plat incorrect", "Qualité médiocre", "Livraison trop tardive", "Annulation restaurant"]),
   statut: pick(["En attente", "En attente", "Approuvé", "Refusé", "Remboursé"] as const),
   date: dateAgo(rand(20)),
-  traiteBy: rand(2) === 0 ? "Yassine Amrani" : undefined,
+  traiteBy: rand(2) === 0 ? "Yanis" : undefined,
 }));
 
 export const livreurs: Livreur[] = Array.from({ length: 12 }, (_, i) => ({
@@ -276,7 +276,7 @@ export const promotions: Promotion[] = [
 ];
 
 export const utilisateurs: Utilisateur[] = [
-  { id: "u1", nom: "Yassine Amrani", email: "admin@ladidfood.ma", role: "Super Admin", actif: true, dernier: dateAgo(0, 1) },
+  { id: "u1", nom: "Yanis", email: "admin@ladidfood.ma", role: "Super Admin", actif: true, dernier: dateAgo(0, 1) },
   { id: "u2", nom: "Khadija Rifi", email: "khadija.rifi@ladidfood.ma", role: "Manager", actif: true, dernier: dateAgo(0, 3) },
   { id: "u3", nom: "Mustapha El Idrissi", email: "mustapha.chef@ladidfood.ma", role: "Chef cuisine", actif: true, dernier: dateAgo(0, 8) },
   { id: "u4", nom: "Sanaa Bakkali", email: "sanaa.caisse@ladidfood.ma", role: "Caissier", actif: true, dernier: dateAgo(1) },

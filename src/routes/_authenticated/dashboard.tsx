@@ -24,7 +24,7 @@ function Dashboard() {
     <div>
       <PageHeader
         icon={LayoutDashboard}
-        title="Bienvenue, Yassine 👋"
+        title="Bienvenue, Yanis 👋"
         description="Voici l'activité de Ladid Food en temps réel."
       />
 
