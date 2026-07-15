@@ -20,6 +20,12 @@ export type Commande = {
   note?: string;
 };
 
+export type Supplement = {
+  id: string;
+  nom: string;
+  prix: number;
+};
+
 export type Plat = {
   id: string;
   nom: string;
@@ -31,6 +37,8 @@ export type Plat = {
   allergenes: string[];
   halal: boolean;
   ventes: number;
+  image?: string;
+  supplements?: Supplement[];
 };
 
 export type Client = {
