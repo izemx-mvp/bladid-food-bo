@@ -283,6 +283,50 @@ function PlatForm({ plat, onSave, onCancel }: { plat: Plat | null; onSave: (p: P
           {form.allergenes.length === 0 && <span className="text-xs text-muted-foreground">Aucun allergène déclaré</span>}
         </div>
       </FieldGroup>
+
+      <FieldGroup title="Photo du plat">
+        <div className="flex gap-4 items-start">
+          <div className="relative w-32 h-32 rounded-2xl overflow-hidden bg-secondary/50 border border-border/60 shrink-0">
+            {form.image ? (
+              <>
+                <img src={form.image} alt="Aperçu" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => setForm({ ...form, image: "" })} className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-destructive hover:text-destructive-foreground transition">
+                  <X className="h-3 w-3" />
+                </button>
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><ImageIcon className="h-8 w-8" /></div>
+            )}
+          </div>
+          <div className="flex-1 space-y-2">
+            <Label>URL de l'image</Label>
+            <Input value={form.image ?? ""} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://…" />
+            <label className="inline-flex items-center gap-2 text-xs cursor-pointer rounded-full border border-primary/30 text-primary px-3 py-1.5 hover:bg-primary/10 transition">
+              <Upload className="h-3.5 w-3.5" />
+              Téléverser depuis l'appareil
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => onImageFile(e.target.files?.[0])} />
+            </label>
+          </div>
+        </div>
+      </FieldGroup>
+
+      <FieldGroup title="Choix supplémentaires">
+        <div className="grid grid-cols-[1fr_120px_auto] gap-2">
+          <Input value={suppNom} onChange={(e) => setSuppNom(e.target.value)} placeholder="Nom du supplément (ex: Fromage)" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSupplement(); } }} />
+          <Input type="number" value={suppPrix || ""} onChange={(e) => setSuppPrix(+e.target.value)} placeholder="Prix" />
+          <Button type="button" variant="outline" className="rounded-full shrink-0" onClick={addSupplement}><Plus className="h-4 w-4 mr-1" />Ajouter</Button>
+        </div>
+        <div className="space-y-2">
+          {(form.supplements ?? []).map((s) => (
+            <div key={s.id} className="grid grid-cols-[1fr_120px_auto] gap-2 items-center p-2 rounded-xl bg-secondary/40 border border-border/40">
+              <Input value={s.nom} onChange={(e) => updateSupplement(s.id, { nom: e.target.value })} className="bg-background/60" />
+              <Input type="number" value={s.prix} onChange={(e) => updateSupplement(s.id, { prix: +e.target.value })} className="bg-background/60" />
+              <Button type="button" size="icon" variant="ghost" className="text-destructive" onClick={() => removeSupplement(s.id)}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+          ))}
+          {(!form.supplements || form.supplements.length === 0) && <span className="text-xs text-muted-foreground">Aucun choix supplémentaire pour ce plat</span>}
+        </div>
+      </FieldGroup>
     </FormShell>
   );
 }
