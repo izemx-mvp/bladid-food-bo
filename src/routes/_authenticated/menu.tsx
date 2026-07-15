@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { platsData as seed, formatMAD, type Plat } from "@/lib/mock/data";
+import { platsData as seed, formatMAD, type Plat, type Supplement } from "@/lib/mock/data";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
