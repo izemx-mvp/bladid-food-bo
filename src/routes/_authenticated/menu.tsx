@@ -138,6 +138,13 @@ function Page() {
               <SheetTitle className="font-display text-2xl">{details.nom}</SheetTitle>
             </SheetHeader>
             <div className="mt-6 space-y-5">
+              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-secondary/40 border border-border/60">
+                {details.image ? (
+                  <img src={details.image} alt={details.nom} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><ImageIcon className="h-12 w-12" /></div>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="border-primary/30 text-primary">{details.categorie}</Badge>
                 <Badge className={details.disponible ? "bg-chart-5/20 text-chart-5 border border-chart-5/30" : "bg-destructive/20 text-destructive border border-destructive/30"}>{details.disponible ? "Disponible" : "Indisponible"}</Badge>
