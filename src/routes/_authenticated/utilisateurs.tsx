@@ -130,7 +130,7 @@ function Page() {
         >
           <FieldGroup title="Identité">
             <Row>
-              <div><Label>Nom complet</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Yassine Amrani" /></div>
+              <div><Label>Nom complet</Label><Input value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} placeholder="Yanis" /></div>
               <div><Label>Adresse email</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="yassine@ladidfood.ma" /></div>
             </Row>
           </FieldGroup>

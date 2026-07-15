@@ -51,16 +51,16 @@ function Page() {
   }
 
   function assignToMe(r: Reclamation) {
-    setData((d) => d.map((x) => x.id === r.id ? { ...x, assignee: "Yassine Amrani", statut: x.statut === "Nouvelle" ? "En cours" : x.statut } : x));
-    setCurrent((cur) => cur?.id === r.id ? { ...cur, assignee: "Yassine Amrani", statut: cur.statut === "Nouvelle" ? "En cours" : cur.statut } : cur);
+    setData((d) => d.map((x) => x.id === r.id ? { ...x, assignee: "Yanis", statut: x.statut === "Nouvelle" ? "En cours" : x.statut } : x));
+    setCurrent((cur) => cur?.id === r.id ? { ...cur, assignee: "Yanis", statut: cur.statut === "Nouvelle" ? "En cours" : cur.statut } : cur);
     toast.success("Réclamation assignée à votre compte");
   }
 
   function sendResponse() {
     if (!current) return;
     if (!reponse.trim()) return toast.error("Écrivez une réponse avant l'envoi");
-    setData((d) => d.map((x) => x.id === current.id ? { ...x, statut: "En cours", assignee: x.assignee ?? "Yassine Amrani" } : x));
-    setCurrent({ ...current, statut: "En cours", assignee: current.assignee ?? "Yassine Amrani" });
+    setData((d) => d.map((x) => x.id === current.id ? { ...x, statut: "En cours", assignee: x.assignee ?? "Yanis" } : x));
+    setCurrent({ ...current, statut: "En cours", assignee: current.assignee ?? "Yanis" });
     toast.success("Réponse envoyée au client", { description: current.client });
     setReponse("");
   }

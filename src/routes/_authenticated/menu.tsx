@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, Info, Clock, Flame, ShieldCheck } from "lucide-react";
+import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, Info, Clock, Flame, ShieldCheck, ImageIcon, X, Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { platsData as seed, formatMAD, type Plat } from "@/lib/mock/data";
+import { platsData as seed, formatMAD, type Plat, type Supplement } from "@/lib/mock/data";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormShell, FieldGroup, Row } from "@/components/backoffice/FormShell";
@@ -80,29 +80,47 @@ function Page() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((p) => (
-          <Card key={p.id} className="glass p-5 group hover:glow transition-all">
-            <div className="flex items-start justify-between mb-3">
-              <Badge variant="outline" className="border-primary/30 text-primary">{p.categorie}</Badge>
-              <Switch checked={p.disponible} onCheckedChange={() => toggle(p)} />
+          <Card key={p.id} className="glass overflow-hidden group hover:glow transition-all flex flex-col">
+            <div className="relative aspect-[16/10] bg-secondary/40 overflow-hidden">
+              {p.image ? (
+                <img src={p.image} alt={p.nom} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+                  <ImageIcon className="h-10 w-10" />
+                </div>
+              )}
+              <div className="absolute top-3 left-3">
+                <Badge variant="outline" className="border-primary/40 text-primary bg-background/80 backdrop-blur">{p.categorie}</Badge>
+              </div>
+              <div className="absolute top-3 right-3 rounded-full bg-background/80 backdrop-blur px-1.5 py-1">
+                <Switch checked={p.disponible} onCheckedChange={() => toggle(p)} />
+              </div>
+              {!p.disponible && (
+                <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] flex items-center justify-center">
+                  <Badge className="bg-destructive/90 text-destructive-foreground">Indisponible</Badge>
+                </div>
+              )}
             </div>
-            <h3 className="font-display text-lg mb-1">{p.nom}</h3>
-            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{p.description}</p>
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-2xl font-display font-semibold text-primary">{formatMAD(p.prix)}</div>
-              <div className="text-xs text-muted-foreground">⏱ {p.tempsPreparation} min</div>
-            </div>
-            <div className="flex items-center gap-1 mb-3 flex-wrap">
-              {p.halal && <Badge className="bg-chart-5/20 text-chart-5 border border-chart-5/30 text-[10px]">100% Halal</Badge>}
-              {p.allergenes.map((a) => <Badge key={a} variant="outline" className="text-[10px]">{a}</Badge>)}
-              {!p.disponible && <Badge className="bg-destructive/20 text-destructive border border-destructive/30 text-[10px]">Indisponible</Badge>}
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3">
-              <span>🔥 {p.ventes} ventes ce mois</span>
-              <div className="flex gap-1">
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setDetails(p)}><Info className="h-3.5 w-3.5" /></Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}><Edit className="h-3.5 w-3.5" /></Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggle(p)}>{p.disponible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p)}><Trash2 className="h-3.5 w-3.5" /></Button>
+            <div className="p-5 flex flex-col flex-1">
+              <h3 className="font-display text-lg mb-1 line-clamp-1">{p.nom}</h3>
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{p.description}</p>
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-2xl font-display font-semibold text-primary">{formatMAD(p.prix)}</div>
+                <div className="text-xs text-muted-foreground">⏱ {p.tempsPreparation} min</div>
+              </div>
+              <div className="flex items-center gap-1 mb-3 flex-wrap">
+                {p.halal && <Badge className="bg-chart-5/20 text-chart-5 border border-chart-5/30 text-[10px]">100% Halal</Badge>}
+                {p.supplements && p.supplements.length > 0 && <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">+{p.supplements.length} suppléments</Badge>}
+                {p.allergenes.map((a) => <Badge key={a} variant="outline" className="text-[10px]">{a}</Badge>)}
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3 mt-auto">
+                <span>🔥 {p.ventes} ventes</span>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setDetails(p)}><Info className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}><Edit className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggle(p)}>{p.disponible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                </div>
               </div>
             </div>
           </Card>
@@ -120,6 +138,13 @@ function Page() {
               <SheetTitle className="font-display text-2xl">{details.nom}</SheetTitle>
             </SheetHeader>
             <div className="mt-6 space-y-5">
+              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-secondary/40 border border-border/60">
+                {details.image ? (
+                  <img src={details.image} alt={details.nom} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><ImageIcon className="h-12 w-12" /></div>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="border-primary/30 text-primary">{details.categorie}</Badge>
                 <Badge className={details.disponible ? "bg-chart-5/20 text-chart-5 border border-chart-5/30" : "bg-destructive/20 text-destructive border border-destructive/30"}>{details.disponible ? "Disponible" : "Indisponible"}</Badge>
@@ -146,6 +171,21 @@ function Page() {
                   {details.allergenes.length ? details.allergenes.map((a) => <Badge key={a} variant="outline">{a}</Badge>) : <span className="text-sm text-muted-foreground flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" />Aucun allergène déclaré</span>}
                 </div>
               </div>
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-2">Choix supplémentaires</div>
+                {details.supplements && details.supplements.length > 0 ? (
+                  <div className="space-y-2">
+                    {details.supplements.map((s) => (
+                      <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40">
+                        <span className="text-sm">{s.nom}</span>
+                        <Badge className="bg-primary/15 text-primary border border-primary/30">+{formatMAD(s.prix)}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Aucun supplément proposé</span>
+                )}
+              </div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1 rounded-full bg-primary text-primary-foreground" onClick={() => { setEditing(details); setOpen(true); setDetails(null); }}><Edit className="h-4 w-4 mr-1" />Modifier</Button>
                 <Button variant="outline" className="rounded-full" onClick={() => { toggle(details); setDetails((p) => p ? { ...p, disponible: !p.disponible } : p); }}>{details.disponible ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{details.disponible ? "Masquer" : "Publier"}</Button>
@@ -160,14 +200,36 @@ function Page() {
 
 function PlatForm({ plat, onSave, onCancel }: { plat: Plat | null; onSave: (p: Plat) => void; onCancel: () => void }) {
   const [form, setForm] = useState<Plat>(plat ?? {
-    id: "", nom: "", categorie: "Tajines", prix: 0, description: "", disponible: true, tempsPreparation: 15, allergenes: [], halal: true, ventes: 0,
+    id: "", nom: "", categorie: "Tajines", prix: 0, description: "", disponible: true, tempsPreparation: 15, allergenes: [], halal: true, ventes: 0, image: "", supplements: [],
   });
   const [allergene, setAllergene] = useState("");
+  const [suppNom, setSuppNom] = useState("");
+  const [suppPrix, setSuppPrix] = useState<number>(0);
 
   function addAllergene() {
     if (!allergene.trim()) return;
     setForm({ ...form, allergenes: [...form.allergenes, allergene.trim()] });
     setAllergene("");
+  }
+
+  function addSupplement() {
+    if (!suppNom.trim()) return;
+    const s: Supplement = { id: `s${Date.now()}`, nom: suppNom.trim(), prix: suppPrix || 0 };
+    setForm({ ...form, supplements: [...(form.supplements ?? []), s] });
+    setSuppNom(""); setSuppPrix(0);
+  }
+  function removeSupplement(id: string) {
+    setForm({ ...form, supplements: (form.supplements ?? []).filter((s) => s.id !== id) });
+  }
+  function updateSupplement(id: string, patch: Partial<Supplement>) {
+    setForm({ ...form, supplements: (form.supplements ?? []).map((s) => s.id === id ? { ...s, ...patch } : s) });
+  }
+
+  function onImageFile(file: File | undefined) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setForm((f) => ({ ...f, image: String(reader.result) }));
+    reader.readAsDataURL(file);
   }
 
   return (
@@ -219,6 +281,50 @@ function PlatForm({ plat, onSave, onCancel }: { plat: Plat | null; onSave: (p: P
             </Badge>
           ))}
           {form.allergenes.length === 0 && <span className="text-xs text-muted-foreground">Aucun allergène déclaré</span>}
+        </div>
+      </FieldGroup>
+
+      <FieldGroup title="Photo du plat">
+        <div className="flex gap-4 items-start">
+          <div className="relative w-32 h-32 rounded-2xl overflow-hidden bg-secondary/50 border border-border/60 shrink-0">
+            {form.image ? (
+              <>
+                <img src={form.image} alt="Aperçu" className="w-full h-full object-cover" />
+                <button type="button" onClick={() => setForm({ ...form, image: "" })} className="absolute top-1 right-1 rounded-full bg-background/80 p-1 hover:bg-destructive hover:text-destructive-foreground transition">
+                  <X className="h-3 w-3" />
+                </button>
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground/40"><ImageIcon className="h-8 w-8" /></div>
+            )}
+          </div>
+          <div className="flex-1 space-y-2">
+            <Label>URL de l'image</Label>
+            <Input value={form.image ?? ""} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://…" />
+            <label className="inline-flex items-center gap-2 text-xs cursor-pointer rounded-full border border-primary/30 text-primary px-3 py-1.5 hover:bg-primary/10 transition">
+              <Upload className="h-3.5 w-3.5" />
+              Téléverser depuis l'appareil
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => onImageFile(e.target.files?.[0])} />
+            </label>
+          </div>
+        </div>
+      </FieldGroup>
+
+      <FieldGroup title="Choix supplémentaires">
+        <div className="grid grid-cols-[1fr_120px_auto] gap-2">
+          <Input value={suppNom} onChange={(e) => setSuppNom(e.target.value)} placeholder="Nom du supplément (ex: Fromage)" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSupplement(); } }} />
+          <Input type="number" value={suppPrix || ""} onChange={(e) => setSuppPrix(+e.target.value)} placeholder="Prix" />
+          <Button type="button" variant="outline" className="rounded-full shrink-0" onClick={addSupplement}><Plus className="h-4 w-4 mr-1" />Ajouter</Button>
+        </div>
+        <div className="space-y-2">
+          {(form.supplements ?? []).map((s) => (
+            <div key={s.id} className="grid grid-cols-[1fr_120px_auto] gap-2 items-center p-2 rounded-xl bg-secondary/40 border border-border/40">
+              <Input value={s.nom} onChange={(e) => updateSupplement(s.id, { nom: e.target.value })} className="bg-background/60" />
+              <Input type="number" value={s.prix} onChange={(e) => updateSupplement(s.id, { prix: +e.target.value })} className="bg-background/60" />
+              <Button type="button" size="icon" variant="ghost" className="text-destructive" onClick={() => removeSupplement(s.id)}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+          ))}
+          {(!form.supplements || form.supplements.length === 0) && <span className="text-xs text-muted-foreground">Aucun choix supplémentaire pour ce plat</span>}
         </div>
       </FieldGroup>
     </FormShell>

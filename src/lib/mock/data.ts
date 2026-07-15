@@ -20,6 +20,12 @@ export type Commande = {
   note?: string;
 };
 
+export type Supplement = {
+  id: string;
+  nom: string;
+  prix: number;
+};
+
 export type Plat = {
   id: string;
   nom: string;
@@ -31,6 +37,8 @@ export type Plat = {
   allergenes: string[];
   halal: boolean;
   ventes: number;
+  image?: string;
+  supplements?: Supplement[];
 };
 
 export type Client = {
@@ -192,21 +200,21 @@ export const commandes: Commande[] = Array.from({ length: 32 }, (_, i) => {
 });
 
 export const platsData: Plat[] = [
-  { id: "p1", nom: "Tajine Poulet aux Olives & Citron Confit", categorie: "Tajines", prix: 85, description: "Poulet fermier mijoté aux olives violettes et citron confit maison", disponible: true, tempsPreparation: 25, allergenes: [], halal: true, ventes: 342 },
-  { id: "p2", nom: "Tajine Kefta aux Œufs", categorie: "Tajines", prix: 75, description: "Boulettes de bœuf haché, sauce tomate épicée, œufs pochés", disponible: true, tempsPreparation: 22, allergenes: ["Œufs"], halal: true, ventes: 289 },
-  { id: "p3", nom: "Tajine Agneau aux Pruneaux & Amandes", categorie: "Tajines", prix: 110, description: "Épaule d'agneau confite, pruneaux moelleux, amandes grillées", disponible: true, tempsPreparation: 35, allergenes: ["Fruits à coque"], halal: true, ventes: 198 },
-  { id: "p4", nom: "Pastilla au Poulet & Amandes", categorie: "Pastilla", prix: 95, description: "Feuilles de brick croustillantes, poulet, amandes, cannelle, sucre glace", disponible: true, tempsPreparation: 30, allergenes: ["Gluten", "Fruits à coque"], halal: true, ventes: 267 },
-  { id: "p5", nom: "Pastilla Fruits de Mer", categorie: "Pastilla", prix: 120, description: "Crevettes, calamars, poisson blanc, vermicelle, herbes fraîches", disponible: true, tempsPreparation: 30, allergenes: ["Gluten", "Fruits de mer"], halal: true, ventes: 145 },
-  { id: "p6", nom: "Couscous Royal", categorie: "Couscous", prix: 130, description: "Semoule fine, agneau, poulet, merguez, 7 légumes, bouillon parfumé", disponible: true, tempsPreparation: 40, allergenes: ["Gluten"], halal: true, ventes: 421 },
-  { id: "p7", nom: "Couscous Sept Légumes", categorie: "Couscous", prix: 75, description: "Semoule, courgette, carotte, navet, potiron, chou, pois chiches, oignon", disponible: true, tempsPreparation: 35, allergenes: ["Gluten"], halal: true, ventes: 312 },
-  { id: "p8", nom: "Msemmen Garni Kefta", categorie: "Petit-déjeuner", prix: 35, description: "Crêpe feuilletée farcie kefta, oignon, tomate, herbes", disponible: true, tempsPreparation: 12, allergenes: ["Gluten"], halal: true, ventes: 234 },
-  { id: "p9", nom: "Harira Traditionnelle", categorie: "Petit-déjeuner", prix: 25, description: "Soupe tomate, lentilles, pois chiches, herbes fraîches, dattes", disponible: true, tempsPreparation: 10, allergenes: ["Gluten", "Céleri"], halal: true, ventes: 578 },
-  { id: "p10", nom: "Pack Famille (4 pers.)", categorie: "Packs & Formules", prix: 320, description: "1 tajine + 1 couscous + entrée + dessert + boisson pour 4 personnes", disponible: true, tempsPreparation: 45, allergenes: ["Gluten"], halal: true, ventes: 89 },
-  { id: "p11", nom: "Formule Déjeuner", categorie: "Packs & Formules", prix: 95, description: "Entrée + plat du jour + dessert + thé à la menthe", disponible: true, tempsPreparation: 25, allergenes: [], halal: true, ventes: 456 },
-  { id: "p12", nom: "Thé à la menthe", categorie: "Boissons", prix: 15, description: "Thé vert, menthe fraîche, sucre selon goût", disponible: true, tempsPreparation: 5, allergenes: [], halal: true, ventes: 892 },
-  { id: "p13", nom: "Jus d'orange pressé", categorie: "Boissons", prix: 20, description: "100% oranges fraîches pressées minute", disponible: true, tempsPreparation: 3, allergenes: [], halal: true, ventes: 234 },
-  { id: "p14", nom: "Chebakia au miel", categorie: "Desserts", prix: 30, description: "Pâtisserie traditionnelle sésame et miel", disponible: false, tempsPreparation: 5, allergenes: ["Gluten", "Sésame"], halal: true, ventes: 167 },
-  { id: "p15", nom: "Cornes de gazelle", categorie: "Desserts", prix: 35, description: "Pâtisserie amande, fleur d'oranger", disponible: true, tempsPreparation: 5, allergenes: ["Gluten", "Fruits à coque"], halal: true, ventes: 143 },
+  { id: "p1", nom: "Tajine Poulet aux Olives & Citron Confit", categorie: "Tajines", prix: 85, description: "Poulet fermier mijoté aux olives violettes et citron confit maison", disponible: true, tempsPreparation: 25, allergenes: [], halal: true, ventes: 342, image: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=800&q=80", supplements: [{ id: "s1", nom: "Pain maison", prix: 5 }, { id: "s2", nom: "Olives supplémentaires", prix: 10 }, { id: "s3", nom: "Piment fort", prix: 3 }] },
+  { id: "p2", nom: "Tajine Kefta aux Œufs", categorie: "Tajines", prix: 75, description: "Boulettes de bœuf haché, sauce tomate épicée, œufs pochés", disponible: true, tempsPreparation: 22, allergenes: ["Œufs"], halal: true, ventes: 289, image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80", supplements: [{ id: "s1", nom: "Œuf supplémentaire", prix: 5 }, { id: "s2", nom: "Fromage", prix: 8 }] },
+  { id: "p3", nom: "Tajine Agneau aux Pruneaux & Amandes", categorie: "Tajines", prix: 110, description: "Épaule d'agneau confite, pruneaux moelleux, amandes grillées", disponible: true, tempsPreparation: 35, allergenes: ["Fruits à coque"], halal: true, ventes: 198, image: "https://images.unsplash.com/photo-1547573854-74d2a71d0826?w=800&q=80" },
+  { id: "p4", nom: "Pastilla au Poulet & Amandes", categorie: "Pastilla", prix: 95, description: "Feuilles de brick croustillantes, poulet, amandes, cannelle, sucre glace", disponible: true, tempsPreparation: 30, allergenes: ["Gluten", "Fruits à coque"], halal: true, ventes: 267, image: "https://images.unsplash.com/photo-1625944525533-473f1b3d9684?w=800&q=80" },
+  { id: "p5", nom: "Pastilla Fruits de Mer", categorie: "Pastilla", prix: 120, description: "Crevettes, calamars, poisson blanc, vermicelle, herbes fraîches", disponible: true, tempsPreparation: 30, allergenes: ["Gluten", "Fruits de mer"], halal: true, ventes: 145, image: "https://images.unsplash.com/photo-1559847844-5315695dadae?w=800&q=80" },
+  { id: "p6", nom: "Couscous Royal", categorie: "Couscous", prix: 130, description: "Semoule fine, agneau, poulet, merguez, 7 légumes, bouillon parfumé", disponible: true, tempsPreparation: 40, allergenes: ["Gluten"], halal: true, ventes: 421, image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80", supplements: [{ id: "s1", nom: "Merguez supplémentaire", prix: 15 }, { id: "s2", nom: "Bouillon extra", prix: 5 }] },
+  { id: "p7", nom: "Couscous Sept Légumes", categorie: "Couscous", prix: 75, description: "Semoule, courgette, carotte, navet, potiron, chou, pois chiches, oignon", disponible: true, tempsPreparation: 35, allergenes: ["Gluten"], halal: true, ventes: 312, image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=800&q=80" },
+  { id: "p8", nom: "Msemmen Garni Kefta", categorie: "Petit-déjeuner", prix: 35, description: "Crêpe feuilletée farcie kefta, oignon, tomate, herbes", disponible: true, tempsPreparation: 12, allergenes: ["Gluten"], halal: true, ventes: 234, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80" },
+  { id: "p9", nom: "Harira Traditionnelle", categorie: "Petit-déjeuner", prix: 25, description: "Soupe tomate, lentilles, pois chiches, herbes fraîches, dattes", disponible: true, tempsPreparation: 10, allergenes: ["Gluten", "Céleri"], halal: true, ventes: 578, image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80" },
+  { id: "p10", nom: "Pack Famille (4 pers.)", categorie: "Packs & Formules", prix: 320, description: "1 tajine + 1 couscous + entrée + dessert + boisson pour 4 personnes", disponible: true, tempsPreparation: 45, allergenes: ["Gluten"], halal: true, ventes: 89, image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80" },
+  { id: "p11", nom: "Formule Déjeuner", categorie: "Packs & Formules", prix: 95, description: "Entrée + plat du jour + dessert + thé à la menthe", disponible: true, tempsPreparation: 25, allergenes: [], halal: true, ventes: 456, image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80" },
+  { id: "p12", nom: "Thé à la menthe", categorie: "Boissons", prix: 15, description: "Thé vert, menthe fraîche, sucre selon goût", disponible: true, tempsPreparation: 5, allergenes: [], halal: true, ventes: 892, image: "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=800&q=80", supplements: [{ id: "s1", nom: "Sucre supplémentaire", prix: 2 }, { id: "s2", nom: "Menthe extra", prix: 3 }] },
+  { id: "p13", nom: "Jus d'orange pressé", categorie: "Boissons", prix: 20, description: "100% oranges fraîches pressées minute", disponible: true, tempsPreparation: 3, allergenes: [], halal: true, ventes: 234, image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=800&q=80" },
+  { id: "p14", nom: "Chebakia au miel", categorie: "Desserts", prix: 30, description: "Pâtisserie traditionnelle sésame et miel", disponible: false, tempsPreparation: 5, allergenes: ["Gluten", "Sésame"], halal: true, ventes: 167, image: "https://images.unsplash.com/photo-1601001435957-74f0958a93c5?w=800&q=80" },
+  { id: "p15", nom: "Cornes de gazelle", categorie: "Desserts", prix: 35, description: "Pâtisserie amande, fleur d'oranger", disponible: true, tempsPreparation: 5, allergenes: ["Gluten", "Fruits à coque"], halal: true, ventes: 143, image: "https://images.unsplash.com/photo-1558326567-98166e232c48?w=800&q=80" },
 ];
 
 export const clients: Client[] = Array.from({ length: 24 }, (_, i) => {
@@ -249,7 +257,7 @@ export const remboursements: Remboursement[] = Array.from({ length: 10 }, (_, i)
   motif: pick(["Commande non reçue", "Plat incorrect", "Qualité médiocre", "Livraison trop tardive", "Annulation restaurant"]),
   statut: pick(["En attente", "En attente", "Approuvé", "Refusé", "Remboursé"] as const),
   date: dateAgo(rand(20)),
-  traiteBy: rand(2) === 0 ? "Yassine Amrani" : undefined,
+  traiteBy: rand(2) === 0 ? "Yanis" : undefined,
 }));
 
 export const livreurs: Livreur[] = Array.from({ length: 12 }, (_, i) => ({
@@ -276,7 +284,7 @@ export const promotions: Promotion[] = [
 ];
 
 export const utilisateurs: Utilisateur[] = [
-  { id: "u1", nom: "Yassine Amrani", email: "admin@ladidfood.ma", role: "Super Admin", actif: true, dernier: dateAgo(0, 1) },
+  { id: "u1", nom: "Yanis", email: "admin@ladidfood.ma", role: "Super Admin", actif: true, dernier: dateAgo(0, 1) },
   { id: "u2", nom: "Khadija Rifi", email: "khadija.rifi@ladidfood.ma", role: "Manager", actif: true, dernier: dateAgo(0, 3) },
   { id: "u3", nom: "Mustapha El Idrissi", email: "mustapha.chef@ladidfood.ma", role: "Chef cuisine", actif: true, dernier: dateAgo(0, 8) },
   { id: "u4", nom: "Sanaa Bakkali", email: "sanaa.caisse@ladidfood.ma", role: "Caissier", actif: true, dernier: dateAgo(1) },

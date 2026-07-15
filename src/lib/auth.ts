@@ -17,7 +17,7 @@ export function getSession(): Session | null {
 }
 
 export function signIn(email: string): Session {
-  const session: Session = { email, name: "Yassine Amrani", role: "Super Admin" };
+  const session: Session = { email, name: "Yanis", role: "Super Admin" };
   localStorage.setItem(KEY, JSON.stringify(session));
   return session;
 }
