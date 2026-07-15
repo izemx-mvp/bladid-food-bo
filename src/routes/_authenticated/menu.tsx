@@ -171,6 +171,21 @@ function Page() {
                   {details.allergenes.length ? details.allergenes.map((a) => <Badge key={a} variant="outline">{a}</Badge>) : <span className="text-sm text-muted-foreground flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" />Aucun allergène déclaré</span>}
                 </div>
               </div>
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-2">Choix supplémentaires</div>
+                {details.supplements && details.supplements.length > 0 ? (
+                  <div className="space-y-2">
+                    {details.supplements.map((s) => (
+                      <div key={s.id} className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/40">
+                        <span className="text-sm">{s.nom}</span>
+                        <Badge className="bg-primary/15 text-primary border border-primary/30">+{formatMAD(s.prix)}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Aucun supplément proposé</span>
+                )}
+              </div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1 rounded-full bg-primary text-primary-foreground" onClick={() => { setEditing(details); setOpen(true); setDetails(null); }}><Edit className="h-4 w-4 mr-1" />Modifier</Button>
                 <Button variant="outline" className="rounded-full" onClick={() => { toggle(details); setDetails((p) => p ? { ...p, disponible: !p.disponible } : p); }}>{details.disponible ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{details.disponible ? "Masquer" : "Publier"}</Button>
