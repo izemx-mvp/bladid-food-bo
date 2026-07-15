@@ -200,14 +200,36 @@ function Page() {
 
 function PlatForm({ plat, onSave, onCancel }: { plat: Plat | null; onSave: (p: Plat) => void; onCancel: () => void }) {
   const [form, setForm] = useState<Plat>(plat ?? {
-    id: "", nom: "", categorie: "Tajines", prix: 0, description: "", disponible: true, tempsPreparation: 15, allergenes: [], halal: true, ventes: 0,
+    id: "", nom: "", categorie: "Tajines", prix: 0, description: "", disponible: true, tempsPreparation: 15, allergenes: [], halal: true, ventes: 0, image: "", supplements: [],
   });
   const [allergene, setAllergene] = useState("");
+  const [suppNom, setSuppNom] = useState("");
+  const [suppPrix, setSuppPrix] = useState<number>(0);
 
   function addAllergene() {
     if (!allergene.trim()) return;
     setForm({ ...form, allergenes: [...form.allergenes, allergene.trim()] });
     setAllergene("");
+  }
+
+  function addSupplement() {
+    if (!suppNom.trim()) return;
+    const s: Supplement = { id: `s${Date.now()}`, nom: suppNom.trim(), prix: suppPrix || 0 };
+    setForm({ ...form, supplements: [...(form.supplements ?? []), s] });
+    setSuppNom(""); setSuppPrix(0);
+  }
+  function removeSupplement(id: string) {
+    setForm({ ...form, supplements: (form.supplements ?? []).filter((s) => s.id !== id) });
+  }
+  function updateSupplement(id: string, patch: Partial<Supplement>) {
+    setForm({ ...form, supplements: (form.supplements ?? []).map((s) => s.id === id ? { ...s, ...patch } : s) });
+  }
+
+  function onImageFile(file: File | undefined) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setForm((f) => ({ ...f, image: String(reader.result) }));
+    reader.readAsDataURL(file);
   }
 
   return (
