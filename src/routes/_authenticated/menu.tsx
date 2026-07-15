@@ -80,29 +80,47 @@ function Page() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((p) => (
-          <Card key={p.id} className="glass p-5 group hover:glow transition-all">
-            <div className="flex items-start justify-between mb-3">
-              <Badge variant="outline" className="border-primary/30 text-primary">{p.categorie}</Badge>
-              <Switch checked={p.disponible} onCheckedChange={() => toggle(p)} />
+          <Card key={p.id} className="glass overflow-hidden group hover:glow transition-all flex flex-col">
+            <div className="relative aspect-[16/10] bg-secondary/40 overflow-hidden">
+              {p.image ? (
+                <img src={p.image} alt={p.nom} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground/40">
+                  <ImageIcon className="h-10 w-10" />
+                </div>
+              )}
+              <div className="absolute top-3 left-3">
+                <Badge variant="outline" className="border-primary/40 text-primary bg-background/80 backdrop-blur">{p.categorie}</Badge>
+              </div>
+              <div className="absolute top-3 right-3 rounded-full bg-background/80 backdrop-blur px-1.5 py-1">
+                <Switch checked={p.disponible} onCheckedChange={() => toggle(p)} />
+              </div>
+              {!p.disponible && (
+                <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px] flex items-center justify-center">
+                  <Badge className="bg-destructive/90 text-destructive-foreground">Indisponible</Badge>
+                </div>
+              )}
             </div>
-            <h3 className="font-display text-lg mb-1">{p.nom}</h3>
-            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{p.description}</p>
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-2xl font-display font-semibold text-primary">{formatMAD(p.prix)}</div>
-              <div className="text-xs text-muted-foreground">⏱ {p.tempsPreparation} min</div>
-            </div>
-            <div className="flex items-center gap-1 mb-3 flex-wrap">
-              {p.halal && <Badge className="bg-chart-5/20 text-chart-5 border border-chart-5/30 text-[10px]">100% Halal</Badge>}
-              {p.allergenes.map((a) => <Badge key={a} variant="outline" className="text-[10px]">{a}</Badge>)}
-              {!p.disponible && <Badge className="bg-destructive/20 text-destructive border border-destructive/30 text-[10px]">Indisponible</Badge>}
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3">
-              <span>🔥 {p.ventes} ventes ce mois</span>
-              <div className="flex gap-1">
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setDetails(p)}><Info className="h-3.5 w-3.5" /></Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}><Edit className="h-3.5 w-3.5" /></Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggle(p)}>{p.disponible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>
-                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p)}><Trash2 className="h-3.5 w-3.5" /></Button>
+            <div className="p-5 flex flex-col flex-1">
+              <h3 className="font-display text-lg mb-1 line-clamp-1">{p.nom}</h3>
+              <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{p.description}</p>
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-2xl font-display font-semibold text-primary">{formatMAD(p.prix)}</div>
+                <div className="text-xs text-muted-foreground">⏱ {p.tempsPreparation} min</div>
+              </div>
+              <div className="flex items-center gap-1 mb-3 flex-wrap">
+                {p.halal && <Badge className="bg-chart-5/20 text-chart-5 border border-chart-5/30 text-[10px]">100% Halal</Badge>}
+                {p.supplements && p.supplements.length > 0 && <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">+{p.supplements.length} suppléments</Badge>}
+                {p.allergenes.map((a) => <Badge key={a} variant="outline" className="text-[10px]">{a}</Badge>)}
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/50 pt-3 mt-auto">
+                <span>🔥 {p.ventes} ventes</span>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setDetails(p)}><Info className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditing(p); setOpen(true); }}><Edit className="h-3.5 w-3.5" /></Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => toggle(p)}>{p.disponible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => remove(p)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                </div>
               </div>
             </div>
           </Card>
