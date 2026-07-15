@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/backoffice/PageHeader";
-import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, Info, Clock, Flame, ShieldCheck } from "lucide-react";
+import { UtensilsCrossed, Plus, Search, Edit, Trash2, Eye, EyeOff, Info, Clock, Flame, ShieldCheck, ImageIcon, X, Upload } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
